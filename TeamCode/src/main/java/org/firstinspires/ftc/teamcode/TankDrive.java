@@ -29,10 +29,14 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import android.util.Log;
+
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
@@ -59,7 +63,9 @@ public class TankDrive extends OpMode
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor left_tread;
     private DcMotor right_tread;
-    private Servo elevator;
+    private DcMotor hook;
+    private CRServo elevator;
+    private double gear = 1;
 
 
     @Override
@@ -71,12 +77,14 @@ public class TankDrive extends OpMode
         // step (using the FTC Robot Controller app on the phone).
         left_tread  = hardwareMap.get(DcMotor.class, "left_tread");
         right_tread = hardwareMap.get(DcMotor.class, "right_tread");
-        elevator = hardwareMap.get(Servo.class, "elevator");
+        elevator = hardwareMap.get(CRServo.class, "elevator");
+        hook = hardwareMap.get(DcMotor.class, "hook");
 
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
         left_tread.setDirection(DcMotor.Direction.FORWARD);
         right_tread.setDirection(DcMotor.Direction.REVERSE);
+        hook.setDirection(DcMotor.Direction.FORWARD);
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
@@ -113,8 +121,8 @@ public class TankDrive extends OpMode
 
         // POV Mode uses left stick to go forward, and right stick to turn.
         // - This uses basic math to combine motions and is easier to drive straight.
-        double drive = -gamepad1.left_stick_y;
-        double turn  =  gamepad1.right_stick_x;
+        double drive = -gamepad2.left_stick_y * gear;
+        double turn  =  gamepad2.right_stick_x * gear;
         leftPower    = Range.clip(drive + turn, -1.0, 1.0) ;
         rightPower   = Range.clip(drive - turn, -1.0, 1.0) ;
 
@@ -126,6 +134,32 @@ public class TankDrive extends OpMode
         // Send calculated power to wheels
         left_tread.setPower(leftPower);
         right_tread.setPower(rightPower);
+        if (gamepad1.y){
+            hook.setPower(1.0);
+        }
+        else {
+            if(gamepad1.x){
+                hook.setPower(-1.0);
+            } else {
+                hook.setPower(0);
+            }
+        }
+
+        if (gamepad1.a) {
+            elevator.setPower(-0.1);
+        }
+        if (gamepad1.b){
+            elevator.setPower(-0.5);
+        }
+
+
+        //Normal Mode: Fast
+        if (gamepad2.y) gear = 0.5;
+        //Precise Mode: Slow
+        if (gamepad2.x) gear = 0.2;
+        //TURBO Mode: Faster
+        if (gamepad2.b) gear = 1;
+
 
         // Show the elapsed game time and wheel power.
         telemetry.addData("Status", "Run Time: " + runtime.toString());

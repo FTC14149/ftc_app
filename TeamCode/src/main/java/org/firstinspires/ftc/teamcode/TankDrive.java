@@ -64,6 +64,7 @@ public class TankDrive extends OpMode
     private DcMotor left_tread;
     private DcMotor right_tread;
     private DcMotor hook;
+    private DcMotor chain;
     private CRServo elevator;
     private double gear = 1;
 
@@ -79,6 +80,7 @@ public class TankDrive extends OpMode
         right_tread = hardwareMap.get(DcMotor.class, "right_tread");
         elevator = hardwareMap.get(CRServo.class, "elevator");
         hook = hardwareMap.get(DcMotor.class, "hook");
+        chain = hardwareMap.get(DcMotor.class, "chain");
 
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
@@ -152,6 +154,16 @@ public class TankDrive extends OpMode
             elevator.setPower(-0.5);
         }
 
+        // make elevator chain go up and down
+        if (gamepad1.dpad_down){
+            chain.setPower(1.0);
+        } else {
+            if (gamepad1.dpad_up) {
+                chain.setPower(-1.0);
+            } else {
+                chain.setPower(0.0);
+            }
+        }
 
         //Normal Mode: Fast
         if (gamepad2.y) gear = 0.5;

@@ -76,7 +76,7 @@ public class RightSideAuto extends OpMode {
     public void start() {
         runtime.reset();
         MyState=state.LOWER;
-        StateCount=45;
+        StateCount=3000;
     }
 
     /*
@@ -86,12 +86,56 @@ public class RightSideAuto extends OpMode {
     public void loop() {
         switch (MyState) {
             case LOWER:
-                hook.setPower(1.0);
                 if (StateCount>0) {
                     hook.setPower(1.0);
                     StateCount=StateCount-1;
                 }else{
+                    MyState=state.UNHOOK;
+                    hook.setPower(0.0);
+                    StateCount = 20;
+                }
+                break;
+
+            case UNHOOK:
+                if (StateCount>0) {
+                    left_tread.setPower(0.3);
+                    right_tread.setPower(0.3);
+                    StateCount=StateCount-1;
+                }else{
+                    MyState=state.TURN1;
+                    left_tread.setPower(0.0);
+                    right_tread.setPower(0.0);
+                    StateCount = 180;
+                }
+            case TURN1:
+                if (StateCount>0) {
+                    right_tread.setPower(0.5);
+                    left_tread.setPower(-0.5);
+                    StateCount=StateCount-1;
+                }else{
+                    MyState=state.FWD1;
+                    left_tread.setPower(0.0);
+                    right_tread.setPower(0.0);
+                    StateCount=500;
+                }
+                break;
+            case FWD1:
+                if(StateCount>0) {
+                    right_tread.setPower(0.15);
+                    left_tread.setPower(0.15);
+                    StateCount = StateCount - 1;
+                }else{
                     MyState=state.END;
+                    left_tread.setPower(0.0);
+                    right_tread.setPower(0.0);
+                    StateCount=3500;
+                }
+                break;
+            case END:
+                if(StateCount>0) {
+                    hook.setPower(-1.0);
+                    StateCount=StateCount-1;
+                }else{
                     hook.setPower(0.0);
                 }
                 break;

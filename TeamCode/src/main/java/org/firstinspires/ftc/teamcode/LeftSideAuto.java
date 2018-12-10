@@ -1,64 +1,22 @@
-/* Copyright (c) 2017 FIRST. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted (subject to the limitations in the disclaimer below) provided that
- * the following conditions are met:
- *
- * Redistributions of source code must retain the above copyright notice, this list
- * of conditions and the following disclaimer.
- *
- * Redistributions in binary form must reproduce the above copyright notice, this
- * list of conditions and the following disclaimer in the documentation and/or
- * other materials provided with the distribution.
- *
- * Neither the name of FIRST nor the names of its contributors may be used to endorse or
- * promote products derived from this software without specific prior written permission.
- *
- * NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE GRANTED BY THIS
- * LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
 package org.firstinspires.ftc.teamcode;
 
-import android.util.Log;
-
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 /**
- * This file contains an example of an iterative (Non-Linear) "OpMode".
- * An OpMode is a 'program' that runs in either the autonomous or the teleop period of an FTC match.
- * The names of OpModes appear on the menu of the FTC Driver Station.
- * When an selection is made from the menu, the corresponding OpMode
- * class is instantiated on the Robot Controller and executed.
- *
- * This particular OpMode just executes a basic Tank Drive Teleop for a two wheeled robot
- * It includes all the skeletal structure that all iterative OpModes contain.
- *
- * Use Android Studios to Copy this Class, and Paste it into your team's code folder with a new name.
- * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
+ * Created by rhill on 12/9/18.
  */
 
-@TeleOp(name="TankDrive", group="Iterative Opmode")
+@Autonomous(name="LeftSideAuto", group="Autonomous")
 //@Disabled
-public class TankDrive extends OpMode
-{
+public class LeftSideAuto extends OpMode {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor left_tread;
@@ -67,8 +25,19 @@ public class TankDrive extends OpMode
     private DcMotor chain;
     private CRServo elevator;
     private double gear = 1;
-    private double turnmod = 1;
 
+    public enum state {
+        LOWER,
+        UNHOOK,
+        TURN1,
+        FWD1,
+        TURN2,
+        FWD2,
+        END
+    }
+
+    LeftSideAuto.state MyState;
+    int StateCount;
 
     @Override
     public void init() {
@@ -93,6 +62,7 @@ public class TankDrive extends OpMode
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
+
     }
 
     /*
@@ -108,6 +78,8 @@ public class TankDrive extends OpMode
     @Override
     public void start() {
         runtime.reset();
+        MyState=LeftSideAuto.state.LOWER;
+        StateCount=3000;
     }
 
     /*
@@ -115,6 +87,84 @@ public class TankDrive extends OpMode
      */
     @Override
     public void loop() {
+        switch (MyState) {
+            case LOWER:
+                if (StateCount>0) {
+                    hook.setPower(1.0);
+                    StateCount=StateCount-1;
+                }else{
+                    MyState= LeftSideAuto.state.UNHOOK;
+                    hook.setPower(0.0);
+                    StateCount = 20;
+                }
+                break;
+
+            case UNHOOK:
+                if (StateCount>0) {
+                    left_tread.setPower(0.3);
+                    right_tread.setPower(0.3);
+                    StateCount=StateCount-1;
+                }else{
+                    MyState= LeftSideAuto.state.TURN1;
+                    left_tread.setPower(0.0);
+                    right_tread.setPower(0.0);
+                    StateCount = 180;
+                }
+            case TURN1:
+                if (StateCount>0) {
+                    right_tread.setPower(0.5);
+                    left_tread.setPower(-0.5);
+                    StateCount=StateCount-1;
+                }else{
+                    MyState= LeftSideAuto.state.FWD1;
+                    left_tread.setPower(0.0);
+                    right_tread.setPower(0.0);
+                    StateCount=500;
+                }
+                break;
+            case FWD1:
+                if(StateCount>0) {
+                    right_tread.setPower(0.15);
+                    left_tread.setPower(0.15);
+                    StateCount = StateCount - 1;
+                }else{
+                    MyState= LeftSideAuto.state.TURN2;
+                    left_tread.setPower(0.0);
+                    right_tread.setPower(0.0);
+                    StateCount=180;
+                }
+                break;
+
+            case TURN2:
+                if (StateCount>0) {
+                    right_tread.setPower(0.5);
+                    left_tread.setPower(-0.5);
+                    StateCount=StateCount-1;
+                }else{
+                    MyState= LeftSideAuto.state.FWD2;
+                    left_tread.setPower(0.0);
+                    right_tread.setPower(0.0);
+                    StateCount=500;
+                }
+                break;
+
+            case FWD2:
+                if(StateCount>0) {
+                    right_tread.setPower(0.15);
+                    left_tread.setPower(0.15);
+                    StateCount = StateCount - 1;
+                }else{
+                    MyState= LeftSideAuto.state.END;
+                    left_tread.setPower(0.0);
+                    right_tread.setPower(0.0);
+                }
+                break;
+
+            case END:
+                break;
+        }
+
+        /*
         // Setup a variable for each drive wheel to save power level for telemetry
         double leftPower;
         double rightPower;
@@ -125,7 +175,7 @@ public class TankDrive extends OpMode
         // POV Mode uses left stick to go forward, and right stick to turn.
         // - This uses basic math to combine motions and is easier to drive straight.
         double drive = -gamepad2.left_stick_y * gear;
-        double turn  =  gamepad2.right_stick_x * gear * turnmod;
+        double turn  =  gamepad2.right_stick_x * gear;
         leftPower    = Range.clip(drive + turn, -1.0, 1.0) ;
         rightPower   = Range.clip(drive - turn, -1.0, 1.0) ;
 
@@ -152,40 +202,32 @@ public class TankDrive extends OpMode
             elevator.setPower(-0.1);
         }
         if (gamepad1.b){
-            elevator.setPower(-0.47);
+            elevator.setPower(-0.5);
         }
 
         // make elevator chain go up and down
         if (gamepad1.dpad_down){
-            chain.setPower(-1.0);
+            chain.setPower(1.0);
         } else {
             if (gamepad1.dpad_up) {
-                chain.setPower(1.0);
+                chain.setPower(-1.0);
             } else {
                 chain.setPower(0.0);
             }
         }
 
         //Normal Mode: Fast
-        if (gamepad2.y) {
-            gear = 0.4;
-            turnmod = 1.75;
-        }
+        if (gamepad2.y) gear = 0.5;
         //Precise Mode: Slow
-        if (gamepad2.x) {
-            gear = 0.12;
-            turnmod = 4;
-        }
+        if (gamepad2.x) gear = 0.2;
         //TURBO Mode: Faster
-        if (gamepad2.b) {
-            gear = 1;
-            turnmod = 1.75;
-        }
+        if (gamepad2.b) gear = 1;
 
 
         // Show the elapsed game time and wheel power.
         telemetry.addData("Status", "Run Time: " + runtime.toString());
         telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
+        */
     }
 
     /*

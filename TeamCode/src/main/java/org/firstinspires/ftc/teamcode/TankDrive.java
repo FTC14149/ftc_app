@@ -149,10 +149,10 @@ public class TankDrive extends OpMode
         }
 
         if (gamepad1.a) {
-            elevator.setPower(-0.1);
+            elevator.setPower(0.05);
         }
         if (gamepad1.b){
-            elevator.setPower(-0.47);
+            elevator.setPower(0.32);
         }
 
         // make elevator chain go up and down

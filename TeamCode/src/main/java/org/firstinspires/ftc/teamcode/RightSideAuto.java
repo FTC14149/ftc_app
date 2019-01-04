@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
@@ -24,6 +25,7 @@ public class RightSideAuto extends OpMode {
     private DcMotor hook;
     private DcMotor chain;
     private CRServo elevator;
+    private DigitalChannel hook_stop;
     private double gear = 1;
 
     public enum state{
@@ -48,6 +50,9 @@ public class RightSideAuto extends OpMode {
         elevator = hardwareMap.get(CRServo.class, "elevator");
         hook = hardwareMap.get(DcMotor.class, "hook");
         chain = hardwareMap.get(DcMotor.class, "chain");
+        hook_stop = hardwareMap.get(DigitalChannel.class, "hook_stop");
+        hook_stop.setMode(DigitalChannel.Mode.INPUT);
+
 
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
@@ -84,6 +89,9 @@ public class RightSideAuto extends OpMode {
      */
     @Override
     public void loop() {
+        boolean hookstop_state = hook_stop.getState();
+        telemetry.addData("hook_stop", Boolean.toString(hookstop_state));
+
         switch (MyState) {
             case LOWER:
                 if (StateCount>0) {

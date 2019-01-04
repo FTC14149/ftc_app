@@ -37,7 +37,9 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
@@ -66,8 +68,9 @@ public class TankDrive extends OpMode
     private DcMotor hook;
     private DcMotor chain;
     private CRServo elevator;
-    private double gear = 1;
-    private double turnmod = 1;
+    private double gear = 0.4;
+    private double turnmod = 1.75;
+    private DigitalChannel hook_stop;
 
 
     @Override
@@ -82,6 +85,9 @@ public class TankDrive extends OpMode
         elevator = hardwareMap.get(CRServo.class, "elevator");
         hook = hardwareMap.get(DcMotor.class, "hook");
         chain = hardwareMap.get(DcMotor.class, "chain");
+        hook_stop = hardwareMap.get(DigitalChannel.class, "hook_stop");
+        hook_stop.setMode(DigitalChannel.Mode.INPUT);
+
 
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
@@ -118,6 +124,8 @@ public class TankDrive extends OpMode
         // Setup a variable for each drive wheel to save power level for telemetry
         double leftPower;
         double rightPower;
+        boolean hookstop_state = hook_stop.getState();
+        telemetry.addData("hook_stop", Boolean.toString(hookstop_state));
 
         // Choose to drive using either Tank Mode, or POV Mode
         // Comment out the method that's not used.  The default below is POV.

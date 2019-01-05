@@ -145,6 +145,7 @@ public class TankDrive extends OpMode
         // Send calculated power to wheels
         left_tread.setPower(leftPower);
         right_tread.setPower(rightPower);
+
         if (gamepad1.y){
             hook.setPower(1.0);
         }

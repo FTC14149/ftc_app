@@ -29,12 +29,16 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import android.app.Activity;
+import android.graphics.Color;
 import android.util.Log;
+import android.view.View;
 
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
@@ -42,6 +46,11 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
+
+import org.firstinspires.ftc.robotcontroller.external.samples.SensorREVColorDistance;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+
+import java.util.Locale;
 
 /**
  * This file contains an example of an iterative (Non-Linear) "OpMode".
@@ -68,10 +77,14 @@ public class TankDrive extends OpMode
     private DcMotor hook;
     private DcMotor chain;
     private CRServo elevator;
+    private ColorSensor color_sensor;
     private double gear = 0.4;
     private double turnmod = 1.75;
     private DigitalChannel hook_stop;
 
+    float hsvValues[] = {0F, 0F, 0F};
+    float values[] = hsvValues;
+    final double ScaleFactor = 255;
 
     @Override
     public void init() {
@@ -87,13 +100,14 @@ public class TankDrive extends OpMode
         chain = hardwareMap.get(DcMotor.class, "chain");
         hook_stop = hardwareMap.get(DigitalChannel.class, "hook_stop");
         hook_stop.setMode(DigitalChannel.Mode.INPUT);
-
+        color_sensor = hardwareMap.get(ColorSensor.class, "color_sensor");
 
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
         left_tread.setDirection(DcMotor.Direction.FORWARD);
         right_tread.setDirection(DcMotor.Direction.REVERSE);
         hook.setDirection(DcMotor.Direction.FORWARD);
+
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
@@ -127,6 +141,9 @@ public class TankDrive extends OpMode
         boolean hookstop_state = hook_stop.getState();
         telemetry.addData("hook_stop", Boolean.toString(hookstop_state));
 
+        // change the background color to match the color detected by the RGB sensor.
+        // pass a reference to the hue, saturation, and value array as an argument
+        // to the HSVToColor method.
         // Choose to drive using either Tank Mode, or POV Mode
         // Comment out the method that's not used.  The default below is POV.
 
@@ -195,6 +212,7 @@ public class TankDrive extends OpMode
         // Show the elapsed game time and wheel power.
         telemetry.addData("Status", "Run Time: " + runtime.toString());
         telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
+        telemetry.update();
     }
 
     /*

@@ -1,15 +1,22 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.app.Activity;
+import android.graphics.Color;
+import android.view.View;
+
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
+
+import org.firstinspires.ftc.robotcontroller.external.samples.SensorREVColorDistance;
 
 /**
  * Created by rhill on 12/7/18.
@@ -26,11 +33,17 @@ public class RightSideAuto extends OpMode {
     private DcMotor chain;
     private CRServo elevator;
     private DigitalChannel hook_stop;
+    private ColorSensor color_sensor;
     private double gear = 1;
+
+    float hsvValues[] = {0F, 0F, 0F};
+    float values[] = hsvValues;
+    final double ScaleFactor = 255;
 
     public enum state{
         LOWER,
         FWD1,
+        SAMPLE,
         CLAIM,
         BACK,
         TURN,
@@ -54,6 +67,7 @@ public class RightSideAuto extends OpMode {
         chain = hardwareMap.get(DcMotor.class, "chain");
         hook_stop = hardwareMap.get(DigitalChannel.class, "hook_stop");
         hook_stop.setMode(DigitalChannel.Mode.INPUT);
+        color_sensor = hardwareMap.get(ColorSensor.class, "color_sensor");
 
 
         // Most robots need the motor on one side to be reversed to drive forward
@@ -65,7 +79,6 @@ public class RightSideAuto extends OpMode {
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
         telemetry.update();
-
 
     }
 
@@ -94,6 +107,19 @@ public class RightSideAuto extends OpMode {
         boolean hookstop_state = hook_stop.getState();
         telemetry.addData("hook_stop", Boolean.toString(hookstop_state));
 
+        Color.RGBToHSV((int) (color_sensor.red() * ScaleFactor),
+                (int) (color_sensor.green() * ScaleFactor),
+                (int) (color_sensor.blue() * ScaleFactor),
+                hsvValues);
+
+        // send the info back to driver station using telemetry function.
+        telemetry.addData("Alpha", color_sensor.alpha());
+        telemetry.addData("Red  ", color_sensor.red());
+        telemetry.addData("Green", color_sensor.green());
+        telemetry.addData("Blue ", color_sensor.blue());
+        telemetry.addData("Hue", hsvValues[0]);
+
+
         switch (MyState) {
             case LOWER:
                 if (StateCount>0) {
@@ -102,7 +128,7 @@ public class RightSideAuto extends OpMode {
                 }else{
                     MyState=state.FWD1;
                     hook.setPower(0.0);
-                    StateCount = 350;
+                    StateCount = 175;
                 }
                 break;
 
@@ -112,11 +138,23 @@ public class RightSideAuto extends OpMode {
                     left_tread.setPower(0.5);
                     StateCount = StateCount - 1;
                 }else{
-                    MyState=state.CLAIM;
+                    MyState=state.SAMPLE;
                     left_tread.setPower(0.0);
                     right_tread.setPower(0.0);
-                    StateCount = 260;
+                    StateCount = 100;
                 }
+                break;
+
+            case SAMPLE:
+                if (StateCount>0) {
+                    left_tread.setPower(0.5);
+                    right_tread.setPower(-0.5);
+                }else{
+                    MyState=state.END;
+                    StateCount=2300;
+                }
+
+
                 break;
 
             case CLAIM:

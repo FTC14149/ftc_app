@@ -141,6 +141,20 @@ public class TankDrive extends OpMode
         boolean hookstop_state = hook_stop.getState();
         telemetry.addData("hook_stop", Boolean.toString(hookstop_state));
 
+        Color.RGBToHSV((int) (color_sensor.red() * ScaleFactor),
+                (int) (color_sensor.green() * ScaleFactor),
+                (int) (color_sensor.blue() * ScaleFactor),
+                hsvValues);
+
+        telemetry.addData("Alpha", color_sensor.alpha());
+        telemetry.addData("Red  ", color_sensor.red());
+        telemetry.addData("Green", color_sensor.green());
+        telemetry.addData("Blue ", color_sensor.blue());
+        telemetry.addData("Hue", hsvValues[0]);
+
+
+
+
         // change the background color to match the color detected by the RGB sensor.
         // pass a reference to the hue, saturation, and value array as an argument
         // to the HSVToColor method.

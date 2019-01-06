@@ -44,14 +44,15 @@ public class RightSideAuto extends OpMode {
         LOWER,
         FWD1,
         SAMPLE,
+        TURN1,
         CLAIM,
         BACK,
-        TURN,
+        TURN2,
         FWD2,
+        FWD3,
         END
     }
     state MyState;
-    int StateCount;
 
     @Override
     public void init() {
@@ -94,9 +95,8 @@ public class RightSideAuto extends OpMode {
      */
     @Override
     public void start() {
-        runtime.reset();
         MyState=state.LOWER;
-        StateCount=2200;
+        runtime.reset();
     }
 
     /*
@@ -122,96 +122,110 @@ public class RightSideAuto extends OpMode {
 
         switch (MyState) {
             case LOWER:
-                if (StateCount>0) {
+                if (runtime.time() < 8.0) {
                     hook.setPower(1.0);
-                    StateCount=StateCount-1;
+                    telemetry.addData("StateCount", runtime.time());
                 }else{
                     MyState=state.FWD1;
                     hook.setPower(0.0);
-                    StateCount = 175;
+                    runtime.reset();
                 }
                 break;
 
             case FWD1:
-                if(StateCount>0) {
-                    right_tread.setPower(0.5);
-                    left_tread.setPower(0.5);
-                    StateCount = StateCount - 1;
+                if(runtime.time() < 0.58) {
+                    telemetry.addData("StateCount", runtime.time());
+                    right_tread.setPower(0.375);
+                    left_tread.setPower(0.375);
                 }else{
                     MyState=state.SAMPLE;
+                    runtime.reset();
                     left_tread.setPower(0.0);
                     right_tread.setPower(0.0);
-                    StateCount = 100;
                 }
                 break;
 
             case SAMPLE:
-                if (StateCount>0) {
+                if (hsvValues[0] <= 65) {
+                    runtime.reset();
+                    MyState=state.FWD2;
+                }else{
+                    runtime.reset();
+                    MyState=state.TURN1;
+                }
+                break;
+
+            case TURN1:
+                if (runtime.time() < 0.2) {
                     left_tread.setPower(0.5);
                     right_tread.setPower(-0.5);
                 }else{
-                    MyState=state.END;
-                    StateCount=2300;
+                    MyState = state.END;
                 }
 
+                break;
+
+            case FWD2:
+                runtime.reset();
+                MyState = state.END;
 
                 break;
 
             case CLAIM:
-                if (StateCount>0) {
+                if (runtime.time() < 0) {
                     elevator.setPower(0.32);
-                    StateCount = StateCount - 1;
+
                 }else{
                     MyState=state.BACK;
-                    StateCount=34;
+
                 }
                 break;
 
             case BACK:
-                if (StateCount>0) {
+                if (runtime.time() < 0) {
                     right_tread.setPower(-0.6);
                     left_tread.setPower(-0.6);
-                    StateCount = StateCount - 1;
+
                 }else{
-                    MyState=state.TURN;
+                    MyState=state.TURN2;
                     right_tread.setPower(0.0);
                     left_tread.setPower(0.0);
-                    StateCount=159;
+
                 }
                 break;
 
-            case TURN:
-                if (StateCount>0) {
+            case TURN2:
+                if (runtime.time() < 0) {
                     right_tread.setPower(-0.8);
                     left_tread.setPower(0.8);
                     //will need to be reversed later on: crater on other side....
-                    StateCount = StateCount - 1;
+
                 }else{
                     MyState=state.FWD2;
                     right_tread.setPower(0.0);
                     left_tread.setPower(0.0);
-                    StateCount=300;
+
                 }
                 break;
 
-            case FWD2:
-                if(StateCount>0) {
+            case FWD3:
+                if(runtime.time() < 0) {
                     right_tread.setPower(1.0);
                     left_tread.setPower(1.0);
-                    StateCount = StateCount - 1;
+
                 }else{
                     MyState=state.END;
                     left_tread.setPower(0.0);
                     right_tread.setPower(0.0);
-                    StateCount = 2300;
+
                 }
                 break;
 
             case END:
-                if(StateCount>0) {
+                if(runtime.time() < 9.4) {
                     hook.setPower(-1.0);
                     elevator.setPower(0.05);
-                    StateCount=StateCount-1;
+
                 }else{
                     hook.setPower(0.0);
                 }

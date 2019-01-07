@@ -13,10 +13,14 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcontroller.external.samples.SensorREVColorDistance;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+
+import java.util.Locale;
 
 /**
  * Created by rhill on 12/7/18.
@@ -34,22 +38,29 @@ public class RightSideAuto extends OpMode {
     private CRServo elevator;
     private DigitalChannel hook_stop;
     private ColorSensor color_sensor;
+    private DistanceSensor distance_sensor;
     private double gear = 1;
 
     float hsvValues[] = {0F, 0F, 0F};
-    float values[] = hsvValues;
     final double ScaleFactor = 255;
 
     public enum state{
+        //Universal:
         LOWER,
         FWD1,
         SAMPLE,
-        TURN1,
+        //Path 1:
+        FWD2,
         CLAIM,
         BACK,
-        TURN2,
-        FWD2,
+        TURN,
         FWD3,
+        //Path 2:
+        ALT1BACK,
+        ALT1TURN1,
+        ALT1FWD2,
+
+
         END
     }
     state MyState;
@@ -69,6 +80,7 @@ public class RightSideAuto extends OpMode {
         hook_stop = hardwareMap.get(DigitalChannel.class, "hook_stop");
         hook_stop.setMode(DigitalChannel.Mode.INPUT);
         color_sensor = hardwareMap.get(ColorSensor.class, "color_sensor");
+        distance_sensor = hardwareMap.get(DistanceSensor.class, "color_sensor");
 
 
         // Most robots need the motor on one side to be reversed to drive forward
@@ -118,11 +130,12 @@ public class RightSideAuto extends OpMode {
         telemetry.addData("Green", color_sensor.green());
         telemetry.addData("Blue ", color_sensor.blue());
         telemetry.addData("Hue", hsvValues[0]);
+        telemetry.addData("Distance (cm)", String.format(Locale.US, "%.02f", distance_sensor.getDistance(DistanceUnit.CM)));
 
 
         switch (MyState) {
             case LOWER:
-                if (runtime.time() < 8.0) {
+                if (runtime.time() < 9.0) {
                     hook.setPower(1.0);
                     telemetry.addData("StateCount", runtime.time());
                 }else{
@@ -133,51 +146,80 @@ public class RightSideAuto extends OpMode {
                 break;
 
             case FWD1:
-                if(runtime.time() < 0.58) {
-                    telemetry.addData("StateCount", runtime.time());
-                    right_tread.setPower(0.375);
-                    left_tread.setPower(0.375);
-                }else{
+                left_tread.setPower(0.2);
+                right_tread.setPower(0.2);
+                if(distance_sensor.getDistance(DistanceUnit.CM) <= 20) {
                     MyState=state.SAMPLE;
                     runtime.reset();
-                    left_tread.setPower(0.0);
-                    right_tread.setPower(0.0);
+                    stopMoving();
                 }
                 break;
 
             case SAMPLE:
-                if (hsvValues[0] <= 65) {
+                if (hsvValues[0] <= 75) {
+                    telemetry.addLine("Detected!");
                     runtime.reset();
                     MyState=state.FWD2;
                 }else{
+                    MyState=state.ALT1BACK;
                     runtime.reset();
-                    MyState=state.TURN1;
+                    telemetry.addLine("Not Detected!");
+
                 }
                 break;
 
-            case TURN1:
-                if (runtime.time() < 0.2) {
+            case ALT1BACK:
+                if(runtime.time() < 0.28) {
+                    right_tread.setPower(-0.4);
+                    left_tread.setPower(-0.4);
+                }else{
+                    MyState=state.ALT1TURN1;
+                    runtime.reset();
+                    stopMoving();
+                }
+
+                break;
+
+            case ALT1TURN1:
+                if (runtime.time() < 0.475) {
                     left_tread.setPower(0.5);
                     right_tread.setPower(-0.5);
                 }else{
-                    MyState = state.END;
+                    MyState = state.ALT1FWD2;
+                    stopMoving();
                 }
 
                 break;
 
+            case ALT1FWD2:
+                if (runtime.time() < 0.7) {
+                    left_tread.setPower(0.8);
+                    right_tread.setPower(0.8);
+                }else {
+                    MyState = state.END;
+                    runtime.reset();
+                    stopMoving();
+
+                }
+
             case FWD2:
-                runtime.reset();
-                MyState = state.END;
+                if (runtime.time() < 0.7) {
+                    left_tread.setPower(0.8);
+                    right_tread.setPower(0.8);
+                }else {
+                    MyState = state.CLAIM;
+                    runtime.reset();
+                    stopMoving();
+
+                }
 
                 break;
 
             case CLAIM:
-                if (runtime.time() < 0) {
+                if (runtime.time() < 3) {
                     elevator.setPower(0.32);
-
                 }else{
-                    MyState=state.BACK;
-
+                    MyState=state.END;
                 }
                 break;
 
@@ -185,26 +227,20 @@ public class RightSideAuto extends OpMode {
                 if (runtime.time() < 0) {
                     right_tread.setPower(-0.6);
                     left_tread.setPower(-0.6);
-
                 }else{
-                    MyState=state.TURN2;
-                    right_tread.setPower(0.0);
-                    left_tread.setPower(0.0);
-
+                    MyState=state.TURN;
+                    stopMoving();
                 }
                 break;
 
-            case TURN2:
+            case TURN:
                 if (runtime.time() < 0) {
                     right_tread.setPower(-0.8);
                     left_tread.setPower(0.8);
                     //will need to be reversed later on: crater on other side....
-
                 }else{
                     MyState=state.FWD2;
-                    right_tread.setPower(0.0);
-                    left_tread.setPower(0.0);
-
+                    stopMoving();
                 }
                 break;
 
@@ -212,12 +248,9 @@ public class RightSideAuto extends OpMode {
                 if(runtime.time() < 0) {
                     right_tread.setPower(1.0);
                     left_tread.setPower(1.0);
-
                 }else{
                     MyState=state.END;
-                    left_tread.setPower(0.0);
-                    right_tread.setPower(0.0);
-
+                    stopMoving();
                 }
                 break;
 
@@ -225,7 +258,6 @@ public class RightSideAuto extends OpMode {
                 if(runtime.time() < 9.4) {
                     hook.setPower(-1.0);
                     elevator.setPower(0.05);
-
                 }else{
                     hook.setPower(0.0);
                 }
@@ -303,6 +335,11 @@ public class RightSideAuto extends OpMode {
      */
     @Override
     public void stop() {
+    }
+
+    public void stopMoving() {
+        left_tread.setPower(0.0);
+        right_tread.setPower(0.0);
     }
 
 }

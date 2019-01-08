@@ -55,6 +55,8 @@ public class RightSideAuto extends OpMode {
         BACK,
         TURN,
         FWD3,
+        TURN2,
+        FWD4,
         //Path 2:
         ALT1BACK,
         ALT1TURN1,
@@ -148,7 +150,7 @@ public class RightSideAuto extends OpMode {
             case FWD1:
                 left_tread.setPower(0.2);
                 right_tread.setPower(0.2);
-                if(distance_sensor.getDistance(DistanceUnit.CM) <= 20) {
+                if(distance_sensor.getDistance(DistanceUnit.CM) <= 18) {
                     MyState=state.SAMPLE;
                     runtime.reset();
                     stopMoving();
@@ -156,7 +158,7 @@ public class RightSideAuto extends OpMode {
                 break;
 
             case SAMPLE:
-                if (hsvValues[0] <= 75) {
+                if (hsvValues[0] <= 85) {
                     telemetry.addLine("Detected!");
                     runtime.reset();
                     MyState=state.FWD2;
@@ -186,6 +188,7 @@ public class RightSideAuto extends OpMode {
                     right_tread.setPower(-0.5);
                 }else{
                     MyState = state.ALT1FWD2;
+                    runtime.reset();
                     stopMoving();
                 }
 
@@ -199,58 +202,94 @@ public class RightSideAuto extends OpMode {
                     MyState = state.END;
                     runtime.reset();
                     stopMoving();
-
                 }
+                break;
 
             case FWD2:
-                if (runtime.time() < 0.7) {
-                    left_tread.setPower(0.8);
-                    right_tread.setPower(0.8);
-                }else {
-                    MyState = state.CLAIM;
-                    runtime.reset();
-                    stopMoving();
-
-                }
-
+                if (runtime.time() < 1.7) {
+                    left_tread.setPower(0.3);
+                    right_tread.setPower(0.3);
+                }else{
+                        MyState = state.CLAIM;
+                        runtime.reset();
+                        stopMoving();
+                    }
                 break;
 
             case CLAIM:
-                if (runtime.time() < 3) {
+                if (runtime.time() < 1.5) {
                     elevator.setPower(0.32);
                 }else{
-                    MyState=state.END;
+                    MyState=state.BACK;
+                    runtime.reset();
                 }
                 break;
 
             case BACK:
-                if (runtime.time() < 0) {
+                if (runtime.time() < 0.1) {
                     right_tread.setPower(-0.6);
                     left_tread.setPower(-0.6);
                 }else{
                     MyState=state.TURN;
                     stopMoving();
+                    runtime.reset();
                 }
                 break;
 
             case TURN:
-                if (runtime.time() < 0) {
+                if (runtime.time() < 0.595) {
                     right_tread.setPower(-0.8);
                     left_tread.setPower(0.8);
                     //will need to be reversed later on: crater on other side....
                 }else{
-                    MyState=state.FWD2;
+                    MyState=state.FWD3;
                     stopMoving();
+                    runtime.reset();
                 }
                 break;
 
+                /*
+                NOTE: Will need to split up into two turns! To avoid both the white minerals and the wall...
+                .
+                .
+                .
+                ...
+                filler..
+                ...
+                ...
+                ...
+                 */
+
             case FWD3:
-                if(runtime.time() < 0) {
-                    right_tread.setPower(1.0);
-                    left_tread.setPower(1.0);
+                if(runtime.time() < 1.15) {
+                    right_tread.setPower(0.55);
+                    left_tread.setPower(0.55);
+                }else{
+                    MyState=state.TURN2;
+                    stopMoving();
+                    runtime.reset();
+                }
+                break;
+
+            case TURN2:
+                if(runtime.time() < 0.1) {
+                    right_tread.setPower(-0.6);
+                    left_tread.setPower(0.6);
+                }else{
+                    MyState=state.FWD4;
+                    stopMoving();
+                    runtime.reset();
+                }
+                break;
+
+            case FWD4:
+                if(runtime.time() < 1.35) {
+                    right_tread.setPower(0.55);
+                    left_tread.setPower(0.55);
                 }else{
                     MyState=state.END;
                     stopMoving();
+                    runtime.reset();
                 }
                 break;
 

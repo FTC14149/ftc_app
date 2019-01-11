@@ -45,28 +45,34 @@ public class RightSideAuto extends OpMode {
     final double ScaleFactor = 255;
 
     public enum state{
-        //Universal:
+        //Universal (Beginning):
         LOWER,
         FWD1,
         SAMPLE,
-        //Path 1:
+        //Base Path (Gold Mineral in the middle):
         FWD2,
         CLAIM,
         BACK,
         TURN,
         FWD3,
+        BACK2,
         TURN2,
-        FWD4,
-        //Path 2:
+        BACK3,
+        //Alternate Path 1 (Gold Mineral to the right (looking from the view of the rover/robot)):
         ALT1BACK1,
         ALT1TURN1,
         ALT1FWD2,
+        ALT1SAMPLE,
         ALT1TURN2,
         ALT1FWD3,
         ALT1FWD4,
         ALT1BACK2,
         ALT1CLAIM,
-        //Universal:
+        //Alternate Path 2 (Gold Mineral to the left (looking from the view of the rover/robot)):
+        ALT2BACK2,
+        ALT2TURN2,
+        ALT2FWD3,
+        //Universal (END):
         END
     }
     state MyState;
@@ -152,9 +158,9 @@ public class RightSideAuto extends OpMode {
                 break;
 
             case FWD1:
-                left_tread.setPower(0.16);
-                right_tread.setPower(0.16);
-                if (distance_sensor.getDistance(DistanceUnit.CM) <= 20) {
+                left_tread.setPower(0.15);
+                right_tread.setPower(0.15);
+                if (distance_sensor.getDistance(DistanceUnit.CM) <= 19.5) {
                     MyState = state.SAMPLE;
                     runtime.reset();
                     stopMoving();
@@ -162,7 +168,7 @@ public class RightSideAuto extends OpMode {
                 break;
 
             case SAMPLE:
-                if (hsvValues[0] <= 87) {
+                if (hsvValues[0] <= 95) {
                     telemetry.addLine("Detected!");
                     runtime.reset();
                     MyState = state.FWD2;
@@ -171,6 +177,93 @@ public class RightSideAuto extends OpMode {
                     runtime.reset();
                     telemetry.addLine("Not Detected!");
 
+                }
+                break;
+
+            case FWD2:
+                if (runtime.time() < 1.15) {
+                    left_tread.setPower(0.32);
+                    right_tread.setPower(0.232);
+                }else{
+                        MyState = state.FWD3;
+                        runtime.reset();
+                        stopMoving();
+                    }
+                break;
+
+            case FWD3:
+                if (runtime.time() < 5.6) {
+                    left_tread.setPower(0.185);
+                    right_tread.setPower(0.185);
+                }else{
+                    MyState = state.CLAIM;
+                    runtime.reset();
+                    stopMoving();
+                }
+                break;
+
+            case CLAIM:
+                if (runtime.time() < 1.5) {
+                    elevator.setPower(0.32);
+                }else{
+                    MyState=state.BACK;
+                    runtime.reset();
+                }
+                break;
+
+            case BACK:
+                if (runtime.time() < 0.01) {
+                    right_tread.setPower(-0.3);
+                    left_tread.setPower(-0.3);
+                }else{
+                    MyState=state.TURN;
+                    stopMoving();
+                    runtime.reset();
+                }
+                break;
+
+            case TURN:
+                if (runtime.time() < 0.37) {
+                    right_tread.setPower(0.8);
+                    left_tread.setPower(-0.8);
+                    //will need to be reversed later on: crater on other side....
+                }else{
+                    MyState=state.BACK2;
+                    stopMoving();
+                    runtime.reset();
+                }
+                break;
+
+            case BACK2:
+                if(runtime.time() < 2.3) {
+                    right_tread.setPower(-0.13);
+                    left_tread.setPower(-0.13);
+                }else{
+                    MyState=state.TURN2;
+                    stopMoving();
+                    runtime.reset();
+                }
+                break;
+
+            case TURN2:
+                if(runtime.time() < 0.19) {
+                    right_tread.setPower(-0.8);
+                    left_tread.setPower(0.8);
+                }else{
+                    MyState=state.BACK3;
+                    stopMoving();
+                    runtime.reset();
+                }
+                break;
+
+            case BACK3:
+                if(runtime.time() < 1.62) {
+                    right_tread.setPower(-0.7);
+                    left_tread.setPower(-0.7);
+                }else{
+                    MyState=state.END;
+                    stopMoving();
+                    runtime.reset();
                 }
                 break;
 
@@ -183,11 +276,10 @@ public class RightSideAuto extends OpMode {
                     runtime.reset();
                     stopMoving();
                 }
-
                 break;
 
             case ALT1TURN1:
-                if (runtime.time() < 0.485) {
+                if (runtime.time() < 0.608) {
                     left_tread.setPower(0.4);
                     right_tread.setPower(-0.4);
                 } else {
@@ -195,17 +287,29 @@ public class RightSideAuto extends OpMode {
                     runtime.reset();
                     stopMoving();
                 }
-
                 break;
 
             case ALT1FWD2:
-                left_tread.setPower(0.17);
-                right_tread.setPower(0.17);
-                if (distance_sensor.getDistance(DistanceUnit.CM) <= 30) {
-                    MyState = state.ALT1FWD3;
+                left_tread.setPower(0.16);
+                right_tread.setPower(0.16);
+                if (distance_sensor.getDistance(DistanceUnit.CM) <= 20) {
+                    MyState = state.ALT1SAMPLE;
                     runtime.reset();
                     stopMoving();
                 }
+                break;
+
+            case ALT1SAMPLE:
+                if(hsvValues[0] <= 95) {
+                    MyState=state.ALT1FWD3;
+                    runtime.reset();
+                    stopMoving();
+                }else{
+                    MyState=state.ALT2BACK2;
+                    runtime.reset();
+                    stopMoving();
+                }
+
                 break;
 
             case ALT1FWD3:
@@ -221,7 +325,7 @@ public class RightSideAuto extends OpMode {
                 break;
 
             case ALT1TURN2:
-                if (runtime.time() < 0.54) {
+                if (runtime.time() < 0.59) {
                     left_tread.setPower(-0.6);
                     right_tread.setPower(0.6);
                 } else {
@@ -266,84 +370,8 @@ public class RightSideAuto extends OpMode {
 
                 break;
 
-            case FWD2:
-                if (runtime.time() < 1.62) {
-                    left_tread.setPower(0.3);
-                    right_tread.setPower(0.3);
-                }else{
-                        MyState = state.CLAIM;
-                        runtime.reset();
-                        stopMoving();
-                    }
-                break;
-
-            case CLAIM:
-                if (runtime.time() < 1.5) {
-                    elevator.setPower(0.32);
-                }else{
-                    MyState=state.BACK;
-                    runtime.reset();
-                }
-                break;
-
-            case BACK:
-                if (runtime.time() < 0.1) {
-                    right_tread.setPower(-0.6);
-                    left_tread.setPower(-0.6);
-                }else{
-                    MyState=state.TURN;
-                    stopMoving();
-                    runtime.reset();
-                }
-                break;
-
-            case TURN:
-                if (runtime.time() < 0.32) {
-                    right_tread.setPower(0.8);
-                    left_tread.setPower(-0.8);
-                    //will need to be reversed later on: crater on other side....
-                }else{
-                    MyState=state.FWD3;
-                    stopMoving();
-                    runtime.reset();
-                }
-                break;
-//Change to BACK.
-            case FWD3:
-                if(runtime.time() < 2.3) {
-                    right_tread.setPower(-0.5);
-                    left_tread.setPower(-0.5);
-                }else{
-                    MyState=state.END;
-                    stopMoving();
-                    runtime.reset();
-                }
-                break;
-
-            case TURN2:
-                if(runtime.time() < 0.17) {
-                    right_tread.setPower(-0.6);
-                    left_tread.setPower(0.6);
-                }else{
-                    MyState=state.FWD4;
-                    stopMoving();
-                    runtime.reset();
-                }
-                break;
-
-            case FWD4:
-                if(runtime.time() < 1.6) {
-                    right_tread.setPower(0.55);
-                    left_tread.setPower(0.55);
-                }else{
-                    MyState=state.END;
-                    stopMoving();
-                    runtime.reset();
-                }
-                break;
-
             case END:
-                if(runtime.time() < 8.6) {
+                if(runtime.time() < 8.3) {
                     hook.setPower(-1.0);
                     elevator.setPower(0.05);
                 }else{

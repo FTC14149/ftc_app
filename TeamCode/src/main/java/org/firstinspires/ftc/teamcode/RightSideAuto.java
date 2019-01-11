@@ -325,7 +325,7 @@ public class RightSideAuto extends OpMode {
                 break;
 
             case ALT1TURN2:
-                if (runtime.time() < 0.59) {
+                if (runtime.time() < 0.639) {
                     left_tread.setPower(-0.6);
                     right_tread.setPower(0.6);
                 } else {
@@ -357,7 +357,6 @@ public class RightSideAuto extends OpMode {
                 }
                 break;
 
-
             case ALT1BACK2:
                 if (runtime.time() < 2.3) {
                     right_tread.setPower(-0.5);
@@ -367,7 +366,30 @@ public class RightSideAuto extends OpMode {
                     runtime.reset();
                     stopMoving();
                 }
+                break;
 
+//Get rid of this if I can't finish it in time..comment it out. (And remove references)
+
+            case ALT2BACK2:
+                if (runtime.time() < 0.65) {
+                    right_tread.setPower(-0.5);
+                    left_tread.setPower(-0.5);
+                }else{
+                    MyState=state.ALT2TURN2;
+                    runtime.reset();
+                    stopMoving();
+                }
+                break;
+
+            case ALT2TURN2:
+                if (runtime.time() < 0.9) {
+                    left_tread.setPower(-0.4);
+                    right_tread.setPower(0.4);
+                } else {
+                    MyState=state.END;
+                    runtime.reset();
+                    stopMoving();
+                }
                 break;
 
             case END:

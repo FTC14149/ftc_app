@@ -68,6 +68,8 @@ public class LeftSideAuto extends OpMode {
         ALT1FWD4,
         ALT1BACK2,
         ALT1CLAIM,
+        ALT1BACK3,
+        ALT1TURN3,
         //Alternate Path 2 (Gold Mineral to the left (looking from the view of the rover/robot)):
         ALT2BACK2,
         ALT2TURN2,
@@ -158,9 +160,9 @@ public class LeftSideAuto extends OpMode {
                 break;
 
             case FWD1:
-                left_tread.setPower(0.15);
-                right_tread.setPower(0.15);
-                if (distance_sensor.getDistance(DistanceUnit.CM) <= 19.5) {
+                left_tread.setPower(0.19);
+                right_tread.setPower(0.19);
+                if (distance_sensor.getDistance(DistanceUnit.CM) <= 18.8) {
                     MyState = state.SAMPLE;
                     runtime.reset();
                     stopMoving();
@@ -168,7 +170,7 @@ public class LeftSideAuto extends OpMode {
                 break;
 
             case SAMPLE:
-                if (hsvValues[0] <= 95) {
+                if (hsvValues[0] <= 140) {
                     telemetry.addLine("Detected!");
                     runtime.reset();
                     MyState = state.FWD2;
@@ -181,11 +183,11 @@ public class LeftSideAuto extends OpMode {
                 break;
 
             case FWD2:
-                if (runtime.time() < 1.15) {
+                if (runtime.time() < 1) {
                     left_tread.setPower(0.32);
-                    right_tread.setPower(0.232);
+                    right_tread.setPower(0.32);
                 }else{
-                    MyState = state.FWD3;
+                    MyState = state.END;
                     runtime.reset();
                     stopMoving();
                 }
@@ -212,20 +214,21 @@ public class LeftSideAuto extends OpMode {
                 break;
 
             case BACK:
-                if (runtime.time() < 0.01) {
+                if (runtime.time() < 1.5) {
                     right_tread.setPower(-0.3);
                     left_tread.setPower(-0.3);
                 }else{
-                    MyState=state.TURN;
+                    //Change if I become sane again...
+                    MyState=state.END;
                     stopMoving();
                     runtime.reset();
                 }
                 break;
 
             case TURN:
-                if (runtime.time() < 0.37) {
-                    right_tread.setPower(0.8);
-                    left_tread.setPower(-0.8);
+                if (runtime.time() < 1.26) {
+                    right_tread.setPower(0.35);
+                    left_tread.setPower(-0.35);
                     //will need to be reversed later on: crater on other side....
                 }else{
                     MyState=state.BACK2;
@@ -235,7 +238,7 @@ public class LeftSideAuto extends OpMode {
                 break;
 
             case BACK2:
-                if(runtime.time() < 2.3) {
+                if(runtime.time() < 2.5) {
                     right_tread.setPower(-0.13);
                     left_tread.setPower(-0.13);
                 }else{
@@ -246,9 +249,9 @@ public class LeftSideAuto extends OpMode {
                 break;
 
             case TURN2:
-                if(runtime.time() < 0.19) {
-                    right_tread.setPower(-0.8);
-                    left_tread.setPower(0.8);
+                if(runtime.time() < 0.395) {
+                    right_tread.setPower(-0.35);
+                    left_tread.setPower(0.35);
                 }else{
                     MyState=state.BACK3;
                     stopMoving();
@@ -257,7 +260,8 @@ public class LeftSideAuto extends OpMode {
                 break;
 
             case BACK3:
-                if(runtime.time() < 1.62) {
+                if(runtime.time() < 1.6) {
+                    //Change these to 0.64 once we're good to go with the turning.
                     right_tread.setPower(-0.7);
                     left_tread.setPower(-0.7);
                 }else{
@@ -279,7 +283,7 @@ public class LeftSideAuto extends OpMode {
                 break;
 
             case ALT1TURN1:
-                if (runtime.time() < 0.608) {
+                if (runtime.time() < 0.52) {
                     left_tread.setPower(0.4);
                     right_tread.setPower(-0.4);
                 } else {
@@ -290,21 +294,26 @@ public class LeftSideAuto extends OpMode {
                 break;
 
             case ALT1FWD2:
-                left_tread.setPower(0.16);
-                right_tread.setPower(0.16);
-                if (distance_sensor.getDistance(DistanceUnit.CM) <= 20) {
+                left_tread.setPower(0.19);
+                right_tread.setPower(0.19);
+                if (distance_sensor.getDistance(DistanceUnit.CM) <= 18.8) {
                     MyState = state.ALT1SAMPLE;
+                    runtime.reset();
+                    stopMoving();
+                }else if (runtime.time() > 7) {
+                    MyState=state.END;
                     runtime.reset();
                     stopMoving();
                 }
                 break;
 
             case ALT1SAMPLE:
-                if(hsvValues[0] <= 95) {
+                if(hsvValues[0] <= 140) {
                     MyState=state.ALT1FWD3;
                     runtime.reset();
                     stopMoving();
                 }else{
+                    //remove if we can't get 100% going
                     MyState=state.ALT2BACK2;
                     runtime.reset();
                     stopMoving();
@@ -313,11 +322,11 @@ public class LeftSideAuto extends OpMode {
                 break;
 
             case ALT1FWD3:
-                if (runtime.time() < 1.85) {
+                if (runtime.time() < 1) {
                     left_tread.setPower(0.2);
                     right_tread.setPower(0.2);
                 } else {
-                    MyState = state.ALT1TURN2;
+                    MyState = state.END;
                     runtime.reset();
                     stopMoving();
                 }
@@ -325,9 +334,9 @@ public class LeftSideAuto extends OpMode {
                 break;
 
             case ALT1TURN2:
-                if (runtime.time() < 0.639) {
-                    left_tread.setPower(-0.6);
-                    right_tread.setPower(0.6);
+                if (runtime.time() < 1.8) {
+                    left_tread.setPower(-0.3);
+                    right_tread.setPower(0.3);
                 } else {
                     MyState = state.ALT1FWD4;
                     runtime.reset();
@@ -358,11 +367,34 @@ public class LeftSideAuto extends OpMode {
                 break;
 
             case ALT1BACK2:
-                if (runtime.time() < 2.3) {
-                    right_tread.setPower(-0.5);
-                    left_tread.setPower(-0.5);
+                if (runtime.time() < 1.8) {
+                    //0.5.
+                    right_tread.setPower(-0.2);
+                    left_tread.setPower(-0.2);
                 }else {
-                    MyState = state.END;
+                    MyState = state.ALT1TURN3;
+                    runtime.reset();
+                    stopMoving();
+                }
+                break;
+
+            case ALT1TURN3:
+                if(runtime.time() < 0.3) {
+                    right_tread.setPower(-0.35);
+                    left_tread.setPower(0.35);
+                }else{
+                    MyState=state.ALT1BACK3;
+                    runtime.reset();
+                    stopMoving();
+                }
+                break;
+
+            case ALT1BACK3:
+                if(runtime.time() < 1.8) {
+                    right_tread.setPower(-0.3);
+                    left_tread.setPower(-0.3);
+                }else{
+                    MyState=state.END;
                     runtime.reset();
                     stopMoving();
                 }

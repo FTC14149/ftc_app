@@ -214,7 +214,7 @@ public class TankDrive extends OpMode
         //Precise Mode: Slow
         if (gamepad2.x) {
             gear = 0.16;
-            turnmod = 4;
+            turnmod = 2.2;
         }
         //TURBO Mode: Faster
         if (gamepad2.b) {

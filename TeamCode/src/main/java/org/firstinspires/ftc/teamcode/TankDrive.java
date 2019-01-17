@@ -40,7 +40,6 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
@@ -74,6 +73,7 @@ public class TankDrive extends OpMode
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor left_tread;
     private DcMotor right_tread;
+    private DcMotor test_motor;
     private DcMotor hook;
     private DcMotor chain;
     private CRServo elevator;
@@ -85,6 +85,8 @@ public class TankDrive extends OpMode
     float hsvValues[] = {0F, 0F, 0F};
     float values[] = hsvValues;
     final double ScaleFactor = 255;
+
+    int keyCountdown;
 
     @Override
     public void init() {
@@ -101,6 +103,10 @@ public class TankDrive extends OpMode
         hook_stop = hardwareMap.get(DigitalChannel.class, "hook_stop");
         hook_stop.setMode(DigitalChannel.Mode.INPUT);
         color_sensor = hardwareMap.get(ColorSensor.class, "color_sensor");
+        test_motor = hardwareMap.get(DcMotor.class, "test_motor");
+
+        test_motor.setDirection(DcMotor.Direction.REVERSE);
+        //test_motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
@@ -112,6 +118,8 @@ public class TankDrive extends OpMode
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
         telemetry.update();
+
+        keyCountdown = 0;
 
     }
 
@@ -138,8 +146,11 @@ public class TankDrive extends OpMode
         // Setup a variable for each drive wheel to save power level for telemetry
         double leftPower;
         double rightPower;
+        int position = test_motor.getCurrentPosition();
         boolean hookstop_state = hook_stop.getState();
         telemetry.addData("hook_stop", Boolean.toString(hookstop_state));
+        telemetry.addData("Encoder Position", position);
+
 
         Color.RGBToHSV((int) (color_sensor.red() * ScaleFactor),
                 (int) (color_sensor.green() * ScaleFactor),
@@ -168,6 +179,7 @@ public class TankDrive extends OpMode
         leftPower    = Range.clip(drive + turn, -1.0, 1.0) ;
         rightPower   = Range.clip(drive - turn, -1.0, 1.0) ;
 
+
         // Tank Mode uses one stick to control each wheel.
         // - This requires no math, but it is hard to drive forward slowly and keep straight.
         // leftPower  = -gamepad1.left_stick_y ;
@@ -195,6 +207,27 @@ public class TankDrive extends OpMode
             elevator.setPower(0.32);
         }
 
+        if (gamepad1.dpad_right && (keyCountdown == 0)) {
+            test_motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            test_motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            test_motor.setTargetPosition(10);
+            test_motor.setPower(0.5);
+            keyCountdown = 100;
+        }
+        if (gamepad1.dpad_left && (keyCountdown == 0)) {
+            test_motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            test_motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            test_motor.setTargetPosition(100);
+            test_motor.setPower(0.5);
+            keyCountdown = 100;
+        }
+        if(keyCountdown > 0) {
+            keyCountdown--;
+        }
+        if(!test_motor.isBusy()) {
+            test_motor.setPower(0.0);
+            test_motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        }
         // make elevator chain go up and down
         if (gamepad1.dpad_down){
             chain.setPower(-1.0);

@@ -283,7 +283,7 @@ public class RightSideAuto extends OpMode {
                 break;
 
             case ALT1TURN1:
-                if (runtime.time() < 0.52) {
+                if (runtime.time() < 0.63) {
                     left_tread.setPower(0.4);
                     right_tread.setPower(-0.4);
                 } else {
@@ -333,7 +333,7 @@ public class RightSideAuto extends OpMode {
                 break;
 
             case ALT1TURN2:
-                if (runtime.time() < 1.8) {
+                if (runtime.time() < 2.0) {
                     left_tread.setPower(-0.3);
                     right_tread.setPower(0.3);
                 } else {

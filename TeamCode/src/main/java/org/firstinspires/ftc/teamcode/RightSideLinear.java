@@ -10,9 +10,11 @@ import android.graphics.ImageFormat;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.hardware.Camera;
+import android.util.Log;
 
 import org.firstinspires.ftc.robotcontroller.internal.CameraBackEndStuff;
 import org.firstinspires.ftc.robotcontroller.internal.CameraPreview;
+import org.firstinspires.ftc.robotcontroller.internal.FtcRobotControllerActivity;
 
 import java.io.ByteArrayOutputStream;
 
@@ -61,6 +63,7 @@ public class RightSideLinear extends LinearOpMode {
     private YuvImage yuvImage = null;
     private int looped = 0;
     private String data;
+    private CameraBackEndStuff bec = new CameraBackEndStuff();
 
     static final float encoder_count_per_inch = 103.0f;
 
@@ -79,8 +82,7 @@ public class RightSideLinear extends LinearOpMode {
     }
 
     private Camera.PreviewCallback previewCallback = new Camera.PreviewCallback() {
-        public void onPreviewFrame(byte[] data, Camera camera)
-        {
+        public void onPreviewFrame(byte[] data, Camera camera) {
             Camera.Parameters parameters = camera.getParameters();
             width = parameters.getPreviewSize().width;
             height = parameters.getPreviewSize().height;
@@ -96,8 +98,83 @@ public class RightSideLinear extends LinearOpMode {
         image = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
     }
 
+    public static void convertRGBtoHSV(float r, float g, float b, float[] hsv)
+    {
+        float h = 0;
+        float s = 0;
+        float v = 0;
+
+        float max = (r > g) ? r : g;
+        max = (max > b) ? max : b;
+
+        float min = (r < g) ? r : g;
+        min = (min < b) ? min : b;
+
+        v = max;    // this is the value v
+
+        // Calculate the saturation s
+        if(max == 0)
+        {
+            s = 0;
+            h = Float.NaN;  // h => UNDEFINED
+        }
+        else
+        {
+            // Chromatic case: Saturation is not 0, determine hue
+            float delta = max - min;
+            s = delta / max;
+
+            if(r == max)
+            {
+                // resulting color is between yellow and magenta
+                h = (g - b) / delta ;
+            }
+            else if(g == max)
+            {
+                // resulting color is between cyan and yellow
+                h = 2 + (b - r) / delta;
+            }
+            else if(b == max)
+            {
+                // resulting color is between magenta and cyan
+                h = 4 + (r - g) / delta;
+            }
+
+            // convert hue to degrees and make sure it is non-negative
+            h *= 60;
+            if(h < 0)
+                h += 360;
+        }
+
+        // now assign everything....
+        hsv[0] = h;
+        hsv[1] = s;
+        hsv[2] = v;
+    }
+
+    private int getHue(int x, int y, int h, int w) {
+        float hue = 0.0f;
+        float hsv[] = new float[3];
+        for(int i=x;i<x+w;i++) {
+            for(int j=y;j<y+h;j++) {
+                int pixel = image.getPixel(i,j);
+                convertRGBtoHSV(red(pixel),green(pixel),blue(pixel),hsv);
+                hue += hsv[0];
+            }
+        }
+        return Math.round(hue/(h*w));
+    }
+
     @Override
     public void runOpMode() {
+        camera = ((FtcRobotControllerActivity) hardwareMap.appContext).camera;
+        camera.setPreviewCallback(previewCallback);
+
+        Camera.Parameters parameters = camera.getParameters();
+        data = parameters.flatten();
+
+        ((FtcRobotControllerActivity) hardwareMap.appContext).initPreview(camera, bec, previewCallback);
+
         left_tread = hardwareMap.get(DcMotor.class, "left_tread");
         right_tread = hardwareMap.get(DcMotor.class, "right_tread");
         left_tread.setDirection(DcMotor.Direction.REVERSE);
@@ -108,10 +185,19 @@ public class RightSideLinear extends LinearOpMode {
         right_tread.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
+        while(opModeIsActive()) {
+            convertImage();
+            int hue = getHue(0,0,20,20);
+            telemetry.addData("Hue", "Current: %d",
+                    hue);
+            telemetry.update();
+
+        }
 
         //DriveStraight(12.0f,1.0f);
-        TurnLeft(360.0f, 0.5f);
+        //TurnLeft(360.0f, 0.5f);
     }
+
     public void DriveStraight(float inches, float power) {
         int newLeftTarget = left_tread.getCurrentPosition() + Math.round(inches * encoder_count_per_inch);
         int newRightTarget = right_tread.getCurrentPosition() + Math.round(inches * encoder_count_per_inch);
@@ -124,7 +210,7 @@ public class RightSideLinear extends LinearOpMode {
         left_tread.setPower(power);
         right_tread.setPower(power);
         while (opModeIsActive() && left_tread.isBusy() && right_tread.isBusy()) {
-            telemetry.addData("Encoder",  "Current: %d",
+            telemetry.addData("Encoder", "Current: %d",
                     left_tread.getCurrentPosition());
             telemetry.update();
         }
@@ -133,6 +219,8 @@ public class RightSideLinear extends LinearOpMode {
         // Turn off RUN_TO_POSITION
         left_tread.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
+
+
     public void TurnLeft(float degrees, float power) {
         int newLeftTarget = left_tread.getCurrentPosition() - Math.round(degrees * encoder_count_per_degree);
         int newRightTarget = right_tread.getCurrentPosition() + Math.round(degrees * encoder_count_per_degree);

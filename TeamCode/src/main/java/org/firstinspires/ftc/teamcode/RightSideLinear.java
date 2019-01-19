@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import android.hardware.Camera;
 
 /**
  * Created by rhill on 1/16/19.
@@ -36,15 +37,15 @@ import com.qualcomm.robotcore.hardware.DcMotor;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@TeleOp(name="TestLinearOpmode", group="LinearOpmode")
+@TeleOp(name="RightSideLinear", group="Autonomous")
 //@Disabled
-public class TestLinearOpmode extends LinearOpMode {
+public class RightSideLinear extends LinearOpMode {
     private DcMotor left_tread;
     private DcMotor right_tread;
 
     static final float encoder_count_per_inch = 103.0f;
 
-    static final float encoder_count_per_degree = 14.45f;
+    static final float encoder_count_per_degree = 17.74f;
     @Override
     public void runOpMode() {
         left_tread = hardwareMap.get(DcMotor.class, "left_tread");
@@ -57,8 +58,8 @@ public class TestLinearOpmode extends LinearOpMode {
         right_tread.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
-        DriveStraight(12.0f,1.0f);
-        TurnLeft(360.0f, 1.0f);
+        //DriveStraight(12.0f,1.0f);
+        TurnLeft(360.0f, 0.5f);
     }
     public void DriveStraight(float inches, float power) {
         int newLeftTarget = left_tread.getCurrentPosition() + Math.round(inches * encoder_count_per_inch);

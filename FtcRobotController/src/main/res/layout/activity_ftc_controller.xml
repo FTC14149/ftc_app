@@ -195,6 +195,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
   </RelativeLayout>
 
+
+  <FrameLayout
+      android:layout_width="100dp"
+      android:layout_height="100dp"
+      android:layout_below="@+id/textErrorMessage"
+      android:layout_centerHorizontal="true"
+      android:id="@+id/previewLayout">
+  </FrameLayout>
+
   <WebView
     android:id="@+id/webViewBlocksRuntime"
     android:layout_width="1dp"

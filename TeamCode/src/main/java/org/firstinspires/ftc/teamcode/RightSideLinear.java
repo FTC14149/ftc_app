@@ -3,7 +3,18 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.ImageFormat;
+import android.graphics.Rect;
+import android.graphics.YuvImage;
 import android.hardware.Camera;
+
+import org.firstinspires.ftc.robotcontroller.internal.CameraBackEndStuff;
+import org.firstinspires.ftc.robotcontroller.internal.CameraPreview;
+
+import java.io.ByteArrayOutputStream;
 
 /**
  * Created by rhill on 1/16/19.
@@ -42,10 +53,49 @@ import android.hardware.Camera;
 public class RightSideLinear extends LinearOpMode {
     private DcMotor left_tread;
     private DcMotor right_tread;
+    private Camera camera;
+    public CameraPreview preview;
+    public Bitmap image;
+    private int width;
+    private int height;
+    private YuvImage yuvImage = null;
+    private int looped = 0;
+    private String data;
 
     static final float encoder_count_per_inch = 103.0f;
 
     static final float encoder_count_per_degree = 17.74f;
+
+    private int red(int pixel) {
+        return (pixel >> 16) & 0xff;
+    }
+
+    private int green(int pixel) {
+        return (pixel >> 8) & 0xff;
+    }
+
+    private int blue(int pixel) {
+        return pixel & 0xff;
+    }
+
+    private Camera.PreviewCallback previewCallback = new Camera.PreviewCallback() {
+        public void onPreviewFrame(byte[] data, Camera camera)
+        {
+            Camera.Parameters parameters = camera.getParameters();
+            width = parameters.getPreviewSize().width;
+            height = parameters.getPreviewSize().height;
+            yuvImage = new YuvImage(data, ImageFormat.NV21, width, height, null);
+            looped += 1;
+        }
+    };
+
+    private void convertImage() {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        yuvImage.compressToJpeg(new Rect(0, 0, width, height), 0, out);
+        byte[] imageBytes = out.toByteArray();
+        image = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
+    }
+
     @Override
     public void runOpMode() {
         left_tread = hardwareMap.get(DcMotor.class, "left_tread");
@@ -58,6 +108,7 @@ public class RightSideLinear extends LinearOpMode {
         right_tread.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
+
         //DriveStraight(12.0f,1.0f);
         TurnLeft(360.0f, 0.5f);
     }
@@ -68,6 +119,7 @@ public class RightSideLinear extends LinearOpMode {
         right_tread.setTargetPosition(newRightTarget);
         left_tread.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         right_tread.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
 
         left_tread.setPower(power);
         right_tread.setPower(power);

@@ -3,8 +3,6 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 /**
  * Created by rhill on 1/16/19.
@@ -41,30 +39,66 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 @TeleOp(name="TestLinearOpmode", group="LinearOpmode")
 //@Disabled
 public class TestLinearOpmode extends LinearOpMode {
-    private DcMotor test_motor;
+    private DcMotor left_tread;
+    private DcMotor right_tread;
+
+    static final float encoder_count_per_inch = 103.0f;
+
+    static final float encoder_count_per_degree = 14.45f;
     @Override
     public void runOpMode() {
-        test_motor  = hardwareMap.get(DcMotor.class, "test_motor");
-        test_motor.setDirection(DcMotor.Direction.FORWARD);
-        test_motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        test_motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        left_tread = hardwareMap.get(DcMotor.class, "left_tread");
+        right_tread = hardwareMap.get(DcMotor.class, "right_tread");
+        left_tread.setDirection(DcMotor.Direction.REVERSE);
+        right_tread.setDirection(DcMotor.Direction.FORWARD);
+        left_tread.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        left_tread.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        right_tread.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        right_tread.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
-        int newLeftTarget = test_motor.getCurrentPosition() + 100;
-        test_motor.setTargetPosition(newLeftTarget);
-        test_motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        DriveStraight(12.0f,1.0f);
+        TurnLeft(360.0f, 1.0f);
+    }
+    public void DriveStraight(float inches, float power) {
+        int newLeftTarget = left_tread.getCurrentPosition() + Math.round(inches * encoder_count_per_inch);
+        int newRightTarget = right_tread.getCurrentPosition() + Math.round(inches * encoder_count_per_inch);
+        left_tread.setTargetPosition(newLeftTarget);
+        right_tread.setTargetPosition(newRightTarget);
+        left_tread.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        right_tread.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        test_motor.setPower(0.5);
-        while (opModeIsActive() && test_motor.isBusy()) {
+        left_tread.setPower(power);
+        right_tread.setPower(power);
+        while (opModeIsActive() && left_tread.isBusy() && right_tread.isBusy()) {
             telemetry.addData("Encoder",  "Current: %d",
-                    test_motor.getCurrentPosition());
+                    left_tread.getCurrentPosition());
             telemetry.update();
         }
         // Stop all motion;
-        test_motor.setPower(0);
+        left_tread.setPower(0);
         // Turn off RUN_TO_POSITION
-        test_motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        left_tread.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
+    public void TurnLeft(float degrees, float power) {
+        int newLeftTarget = left_tread.getCurrentPosition() - Math.round(degrees * encoder_count_per_degree);
+        int newRightTarget = right_tread.getCurrentPosition() + Math.round(degrees * encoder_count_per_degree);
+        left_tread.setTargetPosition(newLeftTarget);
+        right_tread.setTargetPosition(newRightTarget);
+        left_tread.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        right_tread.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
+        left_tread.setPower(power);
+        right_tread.setPower(power);
+        while (opModeIsActive() && left_tread.isBusy() && right_tread.isBusy()) {
+            telemetry.addData("Encoder",  "Current: %d",
+                    left_tread.getCurrentPosition());
+            telemetry.update();
+        }
+        // Stop all motion;
+        left_tread.setPower(0);
+        // Turn off RUN_TO_POSITION
+        left_tread.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 }
 

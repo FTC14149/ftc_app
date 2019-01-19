@@ -1,19 +1,14 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.graphics.Bitmap;
+import android.graphics.YuvImage;
+
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.ImageFormat;
-import android.graphics.Rect;
-import android.graphics.YuvImage;
-import android.hardware.Camera;
 import android.util.Log;
 
-import org.firstinspires.ftc.robotcontroller.internal.CameraBackEndStuff;
-import org.firstinspires.ftc.robotcontroller.internal.CameraPreview;
 import org.firstinspires.ftc.robotcontroller.internal.FtcRobotControllerActivity;
 
 import java.io.ByteArrayOutputStream;
@@ -55,15 +50,12 @@ import java.io.ByteArrayOutputStream;
 public class RightSideLinear extends LinearOpMode {
     private DcMotor left_tread;
     private DcMotor right_tread;
-    private Camera camera;
-    public CameraPreview preview;
     public Bitmap image;
     private int width;
     private int height;
     private YuvImage yuvImage = null;
     private int looped = 0;
     private String data;
-    private CameraBackEndStuff bec = new CameraBackEndStuff();
 
     static final float encoder_count_per_inch = 103.0f;
 
@@ -79,23 +71,6 @@ public class RightSideLinear extends LinearOpMode {
 
     private int blue(int pixel) {
         return pixel & 0xff;
-    }
-
-    private Camera.PreviewCallback previewCallback = new Camera.PreviewCallback() {
-        public void onPreviewFrame(byte[] data, Camera camera) {
-            Camera.Parameters parameters = camera.getParameters();
-            width = parameters.getPreviewSize().width;
-            height = parameters.getPreviewSize().height;
-            yuvImage = new YuvImage(data, ImageFormat.NV21, width, height, null);
-            looped += 1;
-        }
-    };
-
-    private void convertImage() {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        yuvImage.compressToJpeg(new Rect(0, 0, width, height), 0, out);
-        byte[] imageBytes = out.toByteArray();
-        image = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
     }
 
     public static void convertRGBtoHSV(float r, float g, float b, float[] hsv)
@@ -167,14 +142,6 @@ public class RightSideLinear extends LinearOpMode {
 
     @Override
     public void runOpMode() {
-        camera = ((FtcRobotControllerActivity) hardwareMap.appContext).camera;
-        camera.setPreviewCallback(previewCallback);
-
-        Camera.Parameters parameters = camera.getParameters();
-        data = parameters.flatten();
-
-        ((FtcRobotControllerActivity) hardwareMap.appContext).initPreview(camera, bec, previewCallback);
-
         left_tread = hardwareMap.get(DcMotor.class, "left_tread");
         right_tread = hardwareMap.get(DcMotor.class, "right_tread");
         left_tread.setDirection(DcMotor.Direction.REVERSE);
@@ -185,17 +152,17 @@ public class RightSideLinear extends LinearOpMode {
         right_tread.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
-        while(opModeIsActive()) {
-            convertImage();
-            int hue = getHue(0,0,20,20);
-            telemetry.addData("Hue", "Current: %d",
-                    hue);
-            telemetry.update();
+        //while(opModeIsActive()) {
+            //convertImage();
+            //int hue = getHue(0,0,20,20);
+            //telemetry.addData("Hue", "Current: %d",
+            //        hue);
+            //telemetry.update();
 
-        }
+        //}
 
-        //DriveStraight(12.0f,1.0f);
-        //TurnLeft(360.0f, 0.5f);
+        DriveStraight(12.0f,1.0f);
+        TurnLeft(360.0f, 0.5f);
     }
 
     public void DriveStraight(float inches, float power) {

@@ -40,7 +40,6 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.content.res.Resources;
-import android.hardware.Camera;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.net.wifi.WifiManager;
@@ -56,13 +55,11 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.webkit.WebView;
-import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
 import android.widget.PopupMenu;
 import android.widget.TextView;
-import android.widget.FrameLayout;
 
 import com.google.blocks.ftcrobotcontroller.BlocksActivity;
 import com.google.blocks.ftcrobotcontroller.ProgrammingModeActivity;
@@ -123,45 +120,12 @@ import org.firstinspires.ftc.robotcore.internal.webserver.RobotControllerWebInfo
 import org.firstinspires.ftc.robotcore.internal.webserver.WebServer;
 import org.firstinspires.inspection.RcInspectionActivity;
 
-
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 @SuppressWarnings("WeakerAccess")
 public class FtcRobotControllerActivity extends Activity
   {
-
-    public Camera camera;
-    private Camera openFrontFacingCamera() {
-      int cameraId = -1;
-      Camera cam = null;
-      int numberOfCameras = Camera.getNumberOfCameras();
-      for (int i = 0; i < numberOfCameras; i++) {
-        Camera.CameraInfo info = new Camera.CameraInfo();
-        Camera.getCameraInfo(i, info);
-        if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-          cameraId = i;
-          break;
-        }
-      }
-      try {
-        cam = Camera.open(cameraId);
-      } catch (Exception e) {
-
-      }
-      return cam;
-    }
-
-    public void initPreview(final Camera camera, final CameraBackEndStuff context, final Camera.PreviewCallback previewCallback) {
-      runOnUiThread(new Runnable() {
-        @Override
-        public void run() {
-          context.preview = new CameraPreview(FtcRobotControllerActivity.this, camera, previewCallback);
-          FrameLayout previewLayout = (FrameLayout) findViewById(R.id.previewLayout);
-          previewLayout.addView(context.preview);
-        }
-      });
-    }
   public static final String TAG = "RCActivity";
   public String getTag() { return TAG; }
 

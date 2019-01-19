@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.graphics.Rect;
@@ -22,6 +23,7 @@ import java.io.ByteArrayOutputStream;
  * Created by rhill on 1/19/19.
  */
 
+@TeleOp(name="LinearOpModeCamera", group="Autonomous")
 public class LinearOpModeCamera extends LinearOpMode {
     public Camera camera;
     public CameraPreview preview;
@@ -29,7 +31,6 @@ public class LinearOpModeCamera extends LinearOpMode {
     public int width;
     public int height;
     public YuvImage yuvImage = null;
-    public Bitmap image;
 
     volatile private boolean imageReady = false;
 
@@ -39,7 +40,46 @@ public class LinearOpModeCamera extends LinearOpMode {
 
     @Override
     // should be overwritten by extension class
-    public void runOpMode() throws InterruptedException {
+    public void runOpMode() {
+        if (isCameraAvailable()) {
+
+            setCameraDownsampling(8);
+            // parameter determines how downsampled you want your images
+            // 8, 4, 2, or 1.
+            // higher number is more downsampled, so less resolution but faster
+            // 1 is original resolution, which is detailed but slow
+            // must be called before super.init sets up the camera
+
+            telemetry.addLine("Wait for camera to finish initializing!");
+            telemetry.update();
+            startCamera();  // can take a while.
+            // best started before waitForStart
+            telemetry.addLine("Camera ready!");
+            telemetry.update();
+        }
+        waitForStart();
+        int imageCount = 0;
+        while(opModeIsActive()) {
+            int ds2 = 2;
+            //convertImage();
+            if (imageReady()) { // only do this if an image has been returned from the camera
+                int redValue = 0;
+                int blueValue = 0;
+                int greenValue = 0;
+
+                // get image, rotated so (0,0) is in the bottom left of the preview window
+                Bitmap rgbImage;
+                rgbImage = convertYuvImageToRgb(yuvImage, width, height, ds2);
+                int hue = pixelsOfHue(rgbImage, 0,0,20,20,25,75);
+                telemetry.addData("Hue", "Current: %d",
+                        hue);
+                telemetry.addData("ImageCount", "Current: %d",
+                        imageCount);
+                telemetry.update();
+                imageCount += 1;
+                imageReady = false;
+            }
+        }
 
     }
 
@@ -111,7 +151,7 @@ public class LinearOpModeCamera extends LinearOpMode {
 
     public void startCamera() {
 
-        camera = openCamera(Camera.CameraInfo.CAMERA_FACING_FRONT);
+        camera = openCamera(Camera.CameraInfo.CAMERA_FACING_BACK);
         camera.setPreviewCallback(previewCallback);
 
         Camera.Parameters parameters = camera.getParameters();
@@ -120,7 +160,7 @@ public class LinearOpModeCamera extends LinearOpMode {
         height = parameters.getPreviewSize().height / ds;
         parameters.setPreviewSize(width, height);
 
-        camera.setParameters(parameters);
+        //camera.setParameters(parameters);
 
         data = parameters.flatten();
 
@@ -201,6 +241,7 @@ public class LinearOpModeCamera extends LinearOpMode {
     static public Bitmap convertYuvImageToRgb(YuvImage yuvImage, int width, int height, int downSample) {
         Bitmap rgbImage;
         ByteArrayOutputStream out = new ByteArrayOutputStream();
+        yuvImage.getYuvData();
         yuvImage.compressToJpeg(new Rect(0, 0, width, height), 0, out);
         byte[] imageBytes = out.toByteArray();
 
@@ -272,17 +313,20 @@ public class LinearOpModeCamera extends LinearOpMode {
         hsv[2] = v;
     }
 
-    private int getHue(int x, int y, int h, int w) {
-        float hue = 0.0f;
+    public int pixelsOfHue(Bitmap image, int x, int y, int h, int w, int minH, int maxH) {
+        int count = 0;
         float hsv[] = new float[3];
         for(int i=x;i<x+w;i++) {
             for(int j=y;j<y+h;j++) {
                 int pixel = image.getPixel(i,j);
-                convertRGBtoHSV(red(pixel),green(pixel),blue(pixel),hsv);
-                hue += hsv[0];
+                Color.RGBToHSV(red(pixel),green(pixel),blue(pixel),hsv);
+                //convertRGBtoHSV(red(pixel),green(pixel),blue(pixel),hsv);
+                if((hsv[0] > minH) && (hsv[0]<maxH)) {
+                    count++;
+                }
             }
         }
-        return Math.round(hue/(h*w));
+        return count;
     }
 
 

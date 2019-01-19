@@ -50,27 +50,36 @@ import java.io.ByteArrayOutputStream;
 public class RightSideLinear extends EncoderCameraLinearOpMode {
     private int width;
     private int height;
-    private YuvImage yuvImage = null;
     private int looped = 0;
     private String data;
 
+    int ds2 = 2;  // additional downsampling of the image
 
     @Override
     public void runOpMode() {
         super.runOpMode();
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
-        //while(opModeIsActive()) {
+        while(opModeIsActive()) {
             //convertImage();
-            //int hue = getHue(0,0,20,20);
-            //telemetry.addData("Hue", "Current: %d",
-            //        hue);
-            //telemetry.update();
+            if (imageReady()) { // only do this if an image has been returned from the camera
+                int redValue = 0;
+                int blueValue = 0;
+                int greenValue = 0;
 
-        //}
+                // get image, rotated so (0,0) is in the bottom left of the preview window
+                Bitmap rgbImage;
+                rgbImage = convertYuvImageToRgb(yuvImage, width, height, ds2);
+                int hue = pixelsOfHue(rgbImage, 0,0,20,20,25,75);
+                telemetry.addData("Hue", "Current: %d",
+                        hue);
+                telemetry.update();
+            }
+        }
 
-        DriveStraight(12.0f,1.0f);
-        TurnLeft(360.0f, 0.5f);
+
+        //DriveStraight(12.0f,1.0f);
+        //TurnLeft(360.0f, 0.5f);
     }
 
 }

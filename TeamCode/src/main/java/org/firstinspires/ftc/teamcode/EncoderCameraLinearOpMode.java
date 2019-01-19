@@ -28,6 +28,24 @@ public class EncoderCameraLinearOpMode extends LinearOpModeCamera {
         left_tread.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         right_tread.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         right_tread.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        if (isCameraAvailable()) {
+
+            setCameraDownsampling(8);
+            // parameter determines how downsampled you want your images
+            // 8, 4, 2, or 1.
+            // higher number is more downsampled, so less resolution but faster
+            // 1 is original resolution, which is detailed but slow
+            // must be called before super.init sets up the camera
+
+            telemetry.addLine("Wait for camera to finish initializing!");
+            telemetry.update();
+            startCamera();  // can take a while.
+            // best started before waitForStart
+            telemetry.addLine("Camera ready!");
+            telemetry.update();
+        }
+
     }
     public void DriveStraight(float inches, float power) {
         int newLeftTarget = left_tread.getCurrentPosition() + Math.round(inches * encoder_count_per_inch);

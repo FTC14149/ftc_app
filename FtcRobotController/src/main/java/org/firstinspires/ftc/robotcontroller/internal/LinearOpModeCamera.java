@@ -70,11 +70,15 @@ public class LinearOpModeCamera extends LinearOpMode {
                 // get image, rotated so (0,0) is in the bottom left of the preview window
                 Bitmap rgbImage;
                 rgbImage = convertYuvImageToRgb(yuvImage, width, height, ds2);
-                int hue = pixelsOfHue(rgbImage, 0,0,20,20,25,75);
-                telemetry.addData("Hue", "Current: %d",
-                        hue);
-                telemetry.addData("ImageCount", "Current: %d",
-                        imageCount);
+                int leftCount = pixelsOfHue(rgbImage, 70,390,100,100,25,75);
+                int middleCount = pixelsOfHue(rgbImage, 210,390,100,100,25,75);
+                int rightCount = pixelsOfHue(rgbImage, 350,380,100,100,25,75);
+                telemetry.addData("Hue", "Left:   %d",
+                        leftCount);
+                telemetry.addData("Hue", "Middle: %d",
+                        middleCount);
+                telemetry.addData("Hue", "Right:  %d",
+                        rightCount);
                 telemetry.update();
                 imageCount += 1;
                 imageReady = false;
@@ -313,7 +317,7 @@ public class LinearOpModeCamera extends LinearOpMode {
         hsv[2] = v;
     }
 
-    public int pixelsOfHue(Bitmap image, int x, int y, int h, int w, int minH, int maxH) {
+    public int pixelsOfHue(Bitmap image, int x, int y, int w, int h, int minH, int maxH) {
         int count = 0;
         float hsv[] = new float[3];
         for(int i=x;i<x+w;i++) {

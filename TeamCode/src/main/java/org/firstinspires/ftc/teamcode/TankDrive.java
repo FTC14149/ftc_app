@@ -174,7 +174,7 @@ public class TankDrive extends OpMode
 
         // POV Mode uses left stick to go forward, and right stick to turn.
         // - This uses basic math to combine motions and is easier to drive straight.
-        double drive = -gamepad2.left_stick_y * gear;
+        double drive =  gamepad2.left_stick_y * gear;
         double turn  =  gamepad2.right_stick_x * gear * turnmod;
         leftPower    = Range.clip(drive + turn, -1.0, 1.0) ;
         rightPower   = Range.clip(drive - turn, -1.0, 1.0) ;

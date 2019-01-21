@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 /**
  * Created by rhill on 1/19/19.
@@ -16,8 +17,10 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 public class EncoderCameraLinearOpMode extends LinearOpModeCamera {
     private DcMotor left_tread;
     private DcMotor right_tread;
-    private DcMotor hook;
-    private CRServo elevator;
+    public DcMotor hook;
+    public CRServo elevator;
+    public ElapsedTime runtime = new ElapsedTime();
+
     static final float encoder_count_per_inch = 103.0f;
     static final float encoder_count_per_degree = 17.74f;
 
@@ -27,8 +30,7 @@ public class EncoderCameraLinearOpMode extends LinearOpModeCamera {
     private String data;
     volatile private boolean imageReady;
     private int imageCount;
-    public boolean isThisFirstReading;
-    public int originalReading;
+    public int originalReading = 0;
 
     @Override
     public void runOpMode() {
@@ -84,7 +86,7 @@ public class EncoderCameraLinearOpMode extends LinearOpModeCamera {
         left_tread.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
-    public void TurnLeft(float degrees, float power) {
+    public void EncoderTurn(float degrees, float power) {
         int newLeftTarget = left_tread.getCurrentPosition() - Math.round(degrees * encoder_count_per_degree);
         int newRightTarget = right_tread.getCurrentPosition() + Math.round(degrees * encoder_count_per_degree);
         left_tread.setTargetPosition(newLeftTarget);

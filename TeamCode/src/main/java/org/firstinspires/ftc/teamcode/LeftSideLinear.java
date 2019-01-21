@@ -28,7 +28,7 @@ public class LeftSideLinear extends EncoderCameraLinearOpMode {
             else {
                 telemetry.addLine("The middle mineral is gold!");
             }
-            
+
             telemetry.update();
 
         }

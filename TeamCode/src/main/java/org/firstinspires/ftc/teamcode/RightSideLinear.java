@@ -16,42 +16,68 @@ public class RightSideLinear extends EncoderCameraLinearOpMode {
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
-        while(opModeIsActive()) {
+        for(int i=0;i<10;i++) {
+            boolean dummy = opModeIsActive();
             evaluateImage(); //Most deceptively simple code statement in the UNIVERSE.
             if((leftCount > middleCount) && (leftCount > rightCount)) {
                 telemetry.addLine("The left mineral is gold!");
-                if(isThisFirstReading == true) {
-                    originalReading = 1;
-                }
-                isThisFirstReading = false;
+                originalReading = 1;
             } else if((rightCount > middleCount) && (rightCount > leftCount)) {
                 telemetry.addLine("The right mineral is gold!");
-                if(isThisFirstReading == true) {
-                    originalReading = 2;
-                }
-                isThisFirstReading = false;
+                originalReading = 2;
             } else {
                 telemetry.addLine("The middle mineral is gold!");
-                if(isThisFirstReading == true) {
-                    originalReading = 3;
-                }
-                isThisFirstReading = false;
-
+                originalReading = 3;
             }
             telemetry.update();
         }
+        runtime.reset();
+        while((runtime.time() < 8.6) && opModeIsActive()) {
+            hook.setPower(1.0);
+        }
+        DriveStraight(3f, 0.5f);
+        while((runtime.time() < 1) && opModeIsActive()) {
+
+        }
+        hook.setPower(0.0);
+
         //Left Path
         if (originalReading == 1) {
-
+            DriveStraight(6f, 0.5f);
+            EncoderTurn(30, 0.5f);
+            DriveStraight(38f, 0.5f);
+            EncoderTurn(-70f, 0.5f);
+            DriveStraight(24f, 0.5f);
+            elevator.setPower(0.32);
+            runtime.reset();
+            while((runtime.time() < 2) && opModeIsActive());
+            DriveStraight(-20f, 0.3f);
         }
         //Right Path
         else if (originalReading == 2) {
-
+            DriveStraight(6f, 0.5f);
+            EncoderTurn(-30f, 0.5f);
+            DriveStraight(38f, 0.5f);
+            EncoderTurn(70f, 0.5f);
+            DriveStraight(24f, 0.5f);
+            elevator.setPower(0.32);
+            runtime.reset();
+            while ((runtime.time() < 2) && opModeIsActive()) ;
+            EncoderTurn(-90f, 0.5f);
+            DriveStraight(-20f, 0.3f);
         }
         //Middle Path
-        else if (originalReading == 3) {
+        else if (originalReading == 3 || originalReading == 0) {
             DriveStraight(48f, 0.5f);
-
+            elevator.setPower(0.32);
+            runtime.reset();
+            while((runtime.time() < 2) && opModeIsActive());
+            EncoderTurn(-45f, 0.5f);
+            DriveStraight(-20f, 0.3f);
+        }
+        while((runtime.time() < 10) && opModeIsActive()) {
+            elevator.setPower(0.05);
+            hook.setPower(-1.0);
         }
 
 

@@ -4,6 +4,7 @@ import org.firstinspires.ftc.robotcontroller.internal.LinearOpModeCamera;
 import android.graphics.Bitmap;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 /**
@@ -15,19 +16,33 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 public class EncoderCameraLinearOpMode extends LinearOpModeCamera {
     private DcMotor left_tread;
     private DcMotor right_tread;
+    private DcMotor hook;
+    private CRServo elevator;
     static final float encoder_count_per_inch = 103.0f;
     static final float encoder_count_per_degree = 17.74f;
+
+    public int width;
+    private int height;
+    private int looped = 0;
+    private String data;
+    volatile private boolean imageReady;
+    private int imageCount;
+    public boolean isThisFirstReading;
+    public int originalReading;
 
     @Override
     public void runOpMode() {
         left_tread = hardwareMap.get(DcMotor.class, "left_tread");
         right_tread = hardwareMap.get(DcMotor.class, "right_tread");
+        hook = hardwareMap.get(DcMotor.class, "hook");
+        elevator = hardwareMap.get(CRServo.class, "elevator");
         left_tread.setDirection(DcMotor.Direction.REVERSE);
         right_tread.setDirection(DcMotor.Direction.FORWARD);
         left_tread.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         left_tread.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         right_tread.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         right_tread.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        hook.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         if (isCameraAvailable()) {
 

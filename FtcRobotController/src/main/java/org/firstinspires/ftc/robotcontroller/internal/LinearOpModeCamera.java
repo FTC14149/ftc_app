@@ -23,7 +23,7 @@ import java.io.ByteArrayOutputStream;
  * Created by rhill on 1/19/19.
  */
 
-@TeleOp(name="LinearOpModeCamera", group="Autonomous")
+//@TeleOp(name="LinearOpModeCamera", group="Autonomous")
 public class LinearOpModeCamera extends LinearOpMode {
     public Camera camera;
     public CameraPreview preview;
@@ -33,10 +33,15 @@ public class LinearOpModeCamera extends LinearOpMode {
     public YuvImage yuvImage = null;
 
     volatile private boolean imageReady = false;
+    int imageCount = 0;
+    public int leftCount;
+    public int middleCount;
+    public int rightCount;
 
     private int looped = 0;
     private String data;
     private int ds = 1; // downsampling parameter
+    int ds2 = 2;
 
     @Override
     // should be overwritten by extension class
@@ -58,31 +63,14 @@ public class LinearOpModeCamera extends LinearOpMode {
             telemetry.update();
         }
         waitForStart();
-        int imageCount = 0;
-        while(opModeIsActive()) {
-            int ds2 = 2;
-            //convertImage();
-            if (imageReady()) { // only do this if an image has been returned from the camera
-                int redValue = 0;
-                int blueValue = 0;
-                int greenValue = 0;
 
-                // get image, rotated so (0,0) is in the bottom left of the preview window
-                Bitmap rgbImage;
-                rgbImage = convertYuvImageToRgb(yuvImage, width, height, ds2);
-                int leftCount = pixelsOfHue(rgbImage, 70,390,100,100,25,75);
-                int middleCount = pixelsOfHue(rgbImage, 210,390,100,100,25,75);
-                int rightCount = pixelsOfHue(rgbImage, 350,380,100,100,25,75);
-                telemetry.addData("Hue", "Left:   %d",
-                        leftCount);
-                telemetry.addData("Hue", "Middle: %d",
-                        middleCount);
-                telemetry.addData("Hue", "Right:  %d",
-                        rightCount);
-                telemetry.update();
-                imageCount += 1;
-                imageReady = false;
-            }
+        while(opModeIsActive()) {
+
+            //convertImage();
+
+            evaluateImage();
+
+
         }
 
     }
@@ -331,6 +319,30 @@ public class LinearOpModeCamera extends LinearOpMode {
             }
         }
         return count;
+    }
+    public void evaluateImage() {
+        if (imageReady()) { // only do this if an image has been returned from the camera
+            int redValue = 0;
+            int blueValue = 0;
+            int greenValue = 0;
+
+            // get image, rotated so (0,0) is in the bottom left of the preview window
+            Bitmap rgbImage;
+            rgbImage = convertYuvImageToRgb(yuvImage, width, height, ds2);
+            leftCount = pixelsOfHue(rgbImage, 70,390,100,100,25,75);
+            middleCount = pixelsOfHue(rgbImage, 210,390,100,100,25,75);
+            rightCount = pixelsOfHue(rgbImage, 350,380,100,100,25,75);
+            telemetry.addData("Hue", "Left:   %d",
+                    leftCount);
+            telemetry.addData("Hue", "Middle: %d",
+                    middleCount);
+            telemetry.addData("Hue", "Right:  %d",
+                    rightCount);
+
+            telemetry.update();
+            imageCount += 1;
+            imageReady = false;
+        }
     }
 
 

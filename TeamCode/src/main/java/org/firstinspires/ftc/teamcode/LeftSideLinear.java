@@ -45,48 +45,57 @@ public class LeftSideLinear extends EncoderCameraLinearOpMode {
         //Left Path
         if (originalReading == 1) {
             DriveStraight(6f, 0.6f);
-            EncoderTurn(36, 0.5f);
+            EncoderTurn(36, 0.6f);
             DriveStraight(23f, 1.0f);
-            DriveStraight(-16f, 0.6f);
-            EncoderTurn(45f, 0.5f);
-            DriveStraight(32f, 1.0f);
-            DriveStraight(4.5f, 0.3f);
-            EncoderTurn(63, 0.5f);
-            DriveStraight(54f, 1.0f);
+            DriveStraight(-16f, 0.8f);
+            EncoderTurn(45f, 0.6f);
+            DriveStraight(32f, 0.8f);
+            DriveStraight(6f, 0.28f);
+            EncoderTurn(63, 0.6f);
+            DriveStraight(54f, 0.8f);
             elevator.setPower(0.32);
             runtime.reset();
-            while((runtime.time() < 2) && opModeIsActive());
-            DriveStraight(-90f, 1.0f);
+            while((runtime.time() < 1.2) && opModeIsActive());
+            EncoderTurn(2.5f, 0.7f);
+            DriveStraight(-88f, 0.9f);
+            park_servo.setPosition(-1.0);
+            while ((runtime.time() < 5) && opModeIsActive());
         }
         //Right Path
         else if (originalReading == 2) {
-            DriveStraight(6f, 0.5f);
-            EncoderTurn(-36f, 0.5f);
-            DriveStraight(23f, 1.0f);
-            DriveStraight(-16f, 0.5f);
-            EncoderTurn(122f, 0.5f);
-            DriveStraight(44f, 1.0f);
-            DriveStraight(4.5f, 0.3f);
+            DriveStraight(6f, 0.6f);
+            EncoderTurn(-36f, 0.6f);
+            DriveStraight(22f, 1.0f);
+            DriveStraight(-15f, 0.8f);
+            EncoderTurn(120f, 0.6f);
+            DriveStraight(48f, 0.8f);
+            DriveStraight(2f, 0.28f);
             EncoderTurn(57f, 0.5f);
-            DriveStraight(54f, 1.0f);
+            DriveStraight(54f, 0.8f);
             elevator.setPower(0.32);
             runtime.reset();
-            while((runtime.time() < 2) && opModeIsActive());
-            DriveStraight(-90f, 1.0f);
+            while((runtime.time() < 1.2) && opModeIsActive());
+            EncoderTurn(3.5f, 0.7f);
+            DriveStraight(-88f, 0.9f);
+            park_servo.setPosition(-1.0);
+            while ((runtime.time() < 5) && opModeIsActive()) ;
         }
         //Middle Path
         else if (originalReading == 3 || originalReading == 0) {
             DriveStraight(22f, 1.0f);
-            DriveStraight(-11f, 0.5f);
-            EncoderTurn(90f, 0.5f);
-            DriveStraight(39f, 1.0f);
+            DriveStraight(-11f, 0.8f);
+            EncoderTurn(90f, 0.6f);
+            DriveStraight(39f, 0.8f);
             DriveStraight(9f, 0.3f);
-            EncoderTurn(48, 0.5f);
-            DriveStraight(53f, 1.0f);
+            EncoderTurn(48, 0.6f);
+            DriveStraight(53f, 0.8f);
             elevator.setPower(0.32);
             runtime.reset();
-            while((runtime.time() < 2) && opModeIsActive());
-            DriveStraight(-90f, 1.0f);
+            while((runtime.time() < 1.2) && opModeIsActive());
+            EncoderTurn(2.5f, 0.7f);
+            DriveStraight(-88f, 0.9f);
+            park_servo.setPosition(-1.0);
+            while ((runtime.time() < 5) && opModeIsActive()) ;
         }
         runtime.reset();
         while((runtime.time() < 8.8) && opModeIsActive()) {

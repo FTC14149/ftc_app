@@ -81,6 +81,7 @@ public class TankDrive extends OpMode
     private double gear = 0.4;
     private double turnmod = 1.75;
     private DigitalChannel hook_stop;
+    private Servo park_servo;
 
     float hsvValues[] = {0F, 0F, 0F};
     float values[] = hsvValues;
@@ -104,6 +105,7 @@ public class TankDrive extends OpMode
         hook_stop.setMode(DigitalChannel.Mode.INPUT);
         color_sensor = hardwareMap.get(ColorSensor.class, "color_sensor");
         test_motor = hardwareMap.get(DcMotor.class, "test_motor");
+        park_servo = hardwareMap.get(Servo.class, "park_servo");
 
         test_motor.setDirection(DcMotor.Direction.REVERSE);
         //test_motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -207,19 +209,11 @@ public class TankDrive extends OpMode
             elevator.setPower(0.32);
         }
 
-        if (gamepad1.dpad_right && (keyCountdown == 0)) {
-            test_motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            test_motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            test_motor.setTargetPosition(10);
-            test_motor.setPower(0.5);
-            keyCountdown = 100;
+        if (gamepad1.dpad_right) {
+         park_servo.setPosition(0.5);
         }
-        if (gamepad1.dpad_left && (keyCountdown == 0)) {
-            test_motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            test_motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            test_motor.setTargetPosition(100);
-            test_motor.setPower(0.5);
-            keyCountdown = 100;
+        if (gamepad1.dpad_left) {
+            park_servo.setPosition(-0.5);
         }
         if(keyCountdown > 0) {
             keyCountdown--;

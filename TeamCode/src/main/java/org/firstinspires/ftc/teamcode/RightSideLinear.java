@@ -44,40 +44,43 @@ public class RightSideLinear extends EncoderCameraLinearOpMode {
         //Left Path
         if (originalReading == 1) {
             DriveStraight(6f, 0.5f);
-            EncoderTurn(30, 0.5f);
+            EncoderTurn(31, 0.5f);
             DriveStraight(38f, 0.5f);
-            EncoderTurn(-70f, 0.5f);
+            EncoderTurn(-76f, 0.5f);
             DriveStraight(24f, 0.5f);
             elevator.setPower(0.32);
             runtime.reset();
-            while((runtime.time() < 2) && opModeIsActive());
-            DriveStraight(-20f, 0.3f);
+            while ((runtime.time() < 1.5) && opModeIsActive()) ;
+            DriveStraight(-85f, 1.0f);
+            park_servo.setPosition(-1.0);
+            while ((runtime.time() < 5) && opModeIsActive()) ;
         }
         //Right Path
         else if (originalReading == 2) {
             DriveStraight(6f, 0.5f);
             EncoderTurn(-30f, 0.5f);
-            DriveStraight(38f, 0.5f);
+            DriveStraight(38f, 0.8f);
             EncoderTurn(70f, 0.5f);
-            DriveStraight(24f, 0.5f);
+            DriveStraight(28f, 0.8f);
+            EncoderTurn(-103.5f, 0.5f);
             elevator.setPower(0.32);
             runtime.reset();
-            while ((runtime.time() < 2) && opModeIsActive()) ;
-            EncoderTurn(-90f, 0.5f);
-            DriveStraight(-20f, 0.3f);
+            while ((runtime.time() < 1.5) && opModeIsActive()) ;
+
+            DriveStraight(-85f, 1.0f);
+            park_servo.setPosition(-1.0);
+            while ((runtime.time() < 5) && opModeIsActive());
         }
         //Middle Path
         else if (originalReading == 3 || originalReading == 0) {
-            DriveStraight(48f, 0.5f);
+            DriveStraight(58f, 0.5f);
             elevator.setPower(0.32);
             runtime.reset();
-            while((runtime.time() < 2) && opModeIsActive());
-            EncoderTurn(-45f, 0.5f);
-            DriveStraight(-20f, 0.3f);
-        }
-        while((runtime.time() < 10) && opModeIsActive()) {
-            elevator.setPower(0.05);
-            hook.setPower(-1.0);
+            while((runtime.time() < 1.5) && opModeIsActive());
+            EncoderTurn(-47f, 0.5f);
+            DriveStraight(-85f, 0.9f);
+            park_servo.setPosition(-1.0);
+            while ((runtime.time() < 5) && opModeIsActive());
         }
 
 

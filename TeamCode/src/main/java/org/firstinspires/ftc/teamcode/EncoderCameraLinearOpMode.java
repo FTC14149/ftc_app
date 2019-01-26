@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 /**
@@ -20,6 +21,7 @@ public class EncoderCameraLinearOpMode extends LinearOpModeCamera {
     public DcMotor hook;
     public CRServo elevator;
     public ElapsedTime runtime = new ElapsedTime();
+    public Servo park_servo;
 
     static final float encoder_count_per_inch = 103.0f;
     static final float encoder_count_per_degree = 17.74f;
@@ -38,6 +40,7 @@ public class EncoderCameraLinearOpMode extends LinearOpModeCamera {
         right_tread = hardwareMap.get(DcMotor.class, "right_tread");
         hook = hardwareMap.get(DcMotor.class, "hook");
         elevator = hardwareMap.get(CRServo.class, "elevator");
+        park_servo = hardwareMap.get(Servo.class, "park_servo");
         left_tread.setDirection(DcMotor.Direction.REVERSE);
         right_tread.setDirection(DcMotor.Direction.FORWARD);
         left_tread.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -45,6 +48,7 @@ public class EncoderCameraLinearOpMode extends LinearOpModeCamera {
         right_tread.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         right_tread.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         hook.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
 
         if (isCameraAvailable()) {
 

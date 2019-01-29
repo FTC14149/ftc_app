@@ -210,7 +210,7 @@ public class TankDrive extends OpMode
         }
 
         if (gamepad1.dpad_right) {
-         park_servo.setPosition(0.5);
+         park_servo.setPosition(1.0);
         }
         if (gamepad1.dpad_left) {
             park_servo.setPosition(-0.5);

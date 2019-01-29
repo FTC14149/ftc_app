@@ -46,7 +46,7 @@ public class RightSideLinear extends EncoderCameraLinearOpMode {
             DriveStraight(6f, 0.5f);
             EncoderTurn(31, 0.5f);
             DriveStraight(40f, 0.5f);
-            EncoderTurn(-78f, 0.5f);
+            EncoderTurn(-78.75f, 0.5f);
             DriveStraight(24f, 0.5f);
             elevator.setPower(0.32);
             runtime.reset();
@@ -63,7 +63,7 @@ public class RightSideLinear extends EncoderCameraLinearOpMode {
             DriveStraight(38f, 0.7f);
             EncoderTurn(70f, 0.5f);
             DriveStraight(28f, 0.7f);
-            EncoderTurn(-103.5f, 0.5f);
+            EncoderTurn(-103f, 0.5f);
             elevator.setPower(0.32);
             runtime.reset();
             while ((runtime.time() < 1.5) && opModeIsActive()) ;
@@ -78,7 +78,7 @@ public class RightSideLinear extends EncoderCameraLinearOpMode {
             elevator.setPower(0.32);
             runtime.reset();
             while((runtime.time() < 1.5) && opModeIsActive());
-            EncoderTurn(-47f, 0.5f);
+            EncoderTurn(-46.5f, 0.5f);
             DriveStraight(-85f, 0.9f);
             runtime.reset();
             park_servo.setPosition(-1.0);

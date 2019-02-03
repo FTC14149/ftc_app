@@ -73,10 +73,9 @@ public class TankDrive extends OpMode
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor left_tread;
     private DcMotor right_tread;
-    private DcMotor test_motor;
     private DcMotor hook;
-    private DcMotor chain;
-    private CRServo elevator;
+    private DcMotor xslide;
+    private DcMotor gobbler;
     private ColorSensor color_sensor;
     private double gear = 0.4;
     private double turnmod = 1.75;
@@ -86,6 +85,9 @@ public class TankDrive extends OpMode
     float hsvValues[] = {0F, 0F, 0F};
     float values[] = hsvValues;
     final double ScaleFactor = 255;
+
+    static final float encoder_count_per_inch = 103.0f;
+    static final float encoder_count_per_degree = 17.74f;
 
     int keyCountdown;
 
@@ -98,16 +100,16 @@ public class TankDrive extends OpMode
         // step (using the FTC Robot Controller app on the phone).
         left_tread  = hardwareMap.get(DcMotor.class, "left_tread");
         right_tread = hardwareMap.get(DcMotor.class, "right_tread");
-        elevator = hardwareMap.get(CRServo.class, "elevator");
+
         hook = hardwareMap.get(DcMotor.class, "hook");
-        chain = hardwareMap.get(DcMotor.class, "chain");
+        xslide = hardwareMap.get(DcMotor.class, "xslide");
+        gobbler = hardwareMap.get(DcMotor.class, "gobbler");
         hook_stop = hardwareMap.get(DigitalChannel.class, "hook_stop");
         hook_stop.setMode(DigitalChannel.Mode.INPUT);
         color_sensor = hardwareMap.get(ColorSensor.class, "color_sensor");
-        test_motor = hardwareMap.get(DcMotor.class, "test_motor");
         park_servo = hardwareMap.get(Servo.class, "park_servo");
 
-        test_motor.setDirection(DcMotor.Direction.REVERSE);
+        xslide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         //test_motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // Most robots need the motor on one side to be reversed to drive forward
@@ -148,11 +150,8 @@ public class TankDrive extends OpMode
         // Setup a variable for each drive wheel to save power level for telemetry
         double leftPower;
         double rightPower;
-        int position = test_motor.getCurrentPosition();
         boolean hookstop_state = hook_stop.getState();
         telemetry.addData("hook_stop", Boolean.toString(hookstop_state));
-        telemetry.addData("Encoder Position", position);
-
 
         Color.RGBToHSV((int) (color_sensor.red() * ScaleFactor),
                 (int) (color_sensor.green() * ScaleFactor),
@@ -203,10 +202,13 @@ public class TankDrive extends OpMode
         }
 
         if (gamepad1.a) {
-            elevator.setPower(0.05);
+            gobbler.setPower(1.0);
         }
-        if (gamepad1.b){
-            elevator.setPower(0.32);
+        else if (gamepad1.b){
+            gobbler.setPower(-1.0);
+        }
+        else {
+            gobbler.setPower(0.0);
         }
 
         if (gamepad1.dpad_right) {
@@ -218,18 +220,15 @@ public class TankDrive extends OpMode
         if(keyCountdown > 0) {
             keyCountdown--;
         }
-        if(!test_motor.isBusy()) {
-            test_motor.setPower(0.0);
-            test_motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        }
+        
         // make elevator chain go up and down
         if (gamepad1.dpad_down){
-            chain.setPower(-1.0);
+            XSlideRotate(100f, 1.0f);
         } else {
             if (gamepad1.dpad_up) {
-                chain.setPower(1.0);
+                XSlideRotate(-100f, 1.0f);
             } else {
-                chain.setPower(0.0);
+                xslide.setPower(0.0);
             }
         }
 
@@ -263,4 +262,62 @@ public class TankDrive extends OpMode
     public void stop() {
     }
 
+    public void DriveStraight(float inches, float power) {
+        int newLeftTarget = left_tread.getCurrentPosition() + Math.round(inches * encoder_count_per_inch);
+        int newRightTarget = right_tread.getCurrentPosition() + Math.round(inches * encoder_count_per_inch);
+        left_tread.setTargetPosition(newLeftTarget);
+        right_tread.setTargetPosition(newRightTarget);
+        left_tread.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        right_tread.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+
+        left_tread.setPower(power);
+        right_tread.setPower(power);
+        while (left_tread.isBusy() && right_tread.isBusy()) {
+            telemetry.addData("Encoder", "Current: %d",
+                    left_tread.getCurrentPosition());
+            telemetry.update();
+        }
+        // Stop all motion;
+        left_tread.setPower(0);
+        // Turn off RUN_TO_POSITION
+        left_tread.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
+
+    public void EncoderTurn(float degrees, float power) {
+        int newLeftTarget = left_tread.getCurrentPosition() - Math.round(degrees * encoder_count_per_degree);
+        int newRightTarget = right_tread.getCurrentPosition() + Math.round(degrees * encoder_count_per_degree);
+        left_tread.setTargetPosition(newLeftTarget);
+        right_tread.setTargetPosition(newRightTarget);
+        left_tread.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        right_tread.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        left_tread.setPower(power);
+        right_tread.setPower(power);
+        while (left_tread.isBusy() && right_tread.isBusy()) {
+            telemetry.addData("Encoder",  "Current: %d",
+                    left_tread.getCurrentPosition());
+            telemetry.update();
+        }
+        // Stop all motion;
+        left_tread.setPower(0);
+        // Turn off RUN_TO_POSITION
+        left_tread.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
+
+    public void XSlideRotate(float degrees, float power) {
+        int newXSlideTarget = xslide.getCurrentPosition() + Math.round(degrees * encoder_count_per_degree);
+        xslide.setTargetPosition(newXSlideTarget);
+        xslide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        xslide.setPower(power);
+        while (xslide.isBusy()) {
+            telemetry.addData("XSlideEncoder", "Current: %d",
+                    xslide.getCurrentPosition());
+            telemetry.update();
+        }
+        // Stop all motion;
+        xslide.setPower(0);
+        // Turn off RUN_TO_POSITION
+        xslide.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
 }

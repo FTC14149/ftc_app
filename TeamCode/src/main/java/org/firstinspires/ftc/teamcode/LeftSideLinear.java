@@ -45,14 +45,14 @@ public class LeftSideLinear extends EncoderCameraLinearOpMode {
         //Left Path
         if (originalReading == 1) {
             DriveStraight(6f, 0.6f);
-            EncoderTurn(36, 0.6f);
+            EncoderTurn(36.5f, 0.6f);
             DriveStraight(23f, 1.0f);
             DriveStraight(-16f, 0.8f);
             EncoderTurn(45f, 0.6f);
-            DriveStraight(32f, 0.8f);
-            DriveStraight(6f, 0.28f);
-            EncoderTurn(63, 0.6f);
-            DriveStraight(54f, 0.8f);
+            DriveStraight(33f, 0.8f);
+            DriveStraight(3f, 0.28f);
+            EncoderTurn(62.75f, 0.6f);
+            DriveStraight(54f, 0.9f);
             elevator.setPower(0.32);
             runtime.reset();
             while((runtime.time() < 1.2) && opModeIsActive());
@@ -69,15 +69,15 @@ public class LeftSideLinear extends EncoderCameraLinearOpMode {
             DriveStraight(22f, 0.9f);
             DriveStraight(-15f, 0.8f);
             EncoderTurn(120f, 0.6f);
-            DriveStraight(48f, 0.8f);
-            DriveStraight(2f, 0.28f);
+            DriveStraight(46.25f, 0.8f);
+            DriveStraight(1.5f, 0.28f);
             EncoderTurn(57f, 0.5f);
-            DriveStraight(54f, 0.8f);
+            DriveStraight(54f, 0.9f);
             elevator.setPower(0.32);
             runtime.reset();
             while((runtime.time() < 1.2) && opModeIsActive());
-            EncoderTurn(3.5f, 0.7f);
-            DriveStraight(-88f, 0.9f);
+            EncoderTurn(3.75f, 0.7f);
+            DriveStraight(-85f, 0.9f);
             runtime.reset();
             park_servo.setPosition(-1.0);
             while ((runtime.time() < 12) && opModeIsActive()) ;
@@ -88,13 +88,13 @@ public class LeftSideLinear extends EncoderCameraLinearOpMode {
             DriveStraight(-11f, 0.8f);
             EncoderTurn(90f, 0.6f);
             DriveStraight(41f, 0.8f);
-            DriveStraight(4.5f, 0.3f);
-            EncoderTurn(48, 0.6f);
+            DriveStraight(1f, 0.3f);
+            EncoderTurn(49.5f, 0.6f);
             DriveStraight(53f, 0.8f);
             elevator.setPower(0.32);
             runtime.reset();
             while((runtime.time() < 1.2) && opModeIsActive());
-            EncoderTurn(6f, 0.7f);
+            EncoderTurn(1.5f, 0.7f);
             DriveStraight(-88f, 0.9f);
             runtime.reset();
             park_servo.setPosition(-1.0);

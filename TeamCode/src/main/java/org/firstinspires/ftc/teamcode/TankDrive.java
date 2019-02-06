@@ -37,6 +37,7 @@ import android.view.View;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -85,9 +86,15 @@ public class TankDrive extends OpMode
     float hsvValues[] = {0F, 0F, 0F};
     float values[] = hsvValues;
     final double ScaleFactor = 255;
+    boolean xSlideDown = false;
+    boolean xSlideUp = false;
+    int downTarget;
+    int upTarget;
 
     static final float encoder_count_per_inch = 103.0f;
     static final float encoder_count_per_degree = 17.74f;
+
+    boolean xsliderunning = false;
 
     int keyCountdown;
 
@@ -109,6 +116,8 @@ public class TankDrive extends OpMode
         color_sensor = hardwareMap.get(ColorSensor.class, "color_sensor");
         park_servo = hardwareMap.get(Servo.class, "park_servo");
 
+        // Set xslide motor position to zero
+        xslide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         xslide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         //test_motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
@@ -150,6 +159,7 @@ public class TankDrive extends OpMode
         // Setup a variable for each drive wheel to save power level for telemetry
         double leftPower;
         double rightPower;
+        double xSlidePower;
         boolean hookstop_state = hook_stop.getState();
         telemetry.addData("hook_stop", Boolean.toString(hookstop_state));
 
@@ -190,6 +200,13 @@ public class TankDrive extends OpMode
         left_tread.setPower(leftPower);
         right_tread.setPower(rightPower);
 
+        //Manual Mode for X-Slide Mechanism:
+
+        double xSlideDrive =  gamepad2.left_stick_y * 0.75;
+        xSlidePower = Range.clip(xSlideDrive, -1.0, 1.0);
+
+        xslide.setPower(xSlidePower);
+
         if (gamepad1.y){
             hook.setPower(1.0);
         }
@@ -220,17 +237,25 @@ public class TankDrive extends OpMode
         if(keyCountdown > 0) {
             keyCountdown--;
         }
-        
+
         // make elevator chain go up and down
         if (gamepad1.dpad_down){
-            XSlideRotate(100f, 1.0f);
-        } else {
-            if (gamepad1.dpad_up) {
-                XSlideRotate(-100f, 1.0f);
-            } else {
-                xslide.setPower(0.0);
+            XSlideStart(95.0f, 0.5f);
+            xsliderunning = true;
+        }
+        if (gamepad1.dpad_up) {
+            XSlideStart(0.0f, 0.5f);
+            xsliderunning = true;
+        }
+        if(xsliderunning) {
+            if(!xslide.isBusy()) {
+                xsliderunning = false;
+                XSlideFinish();
             }
         }
+        telemetry.addData("XSlideEncoder", "Current: %d",
+                xslide.getCurrentPosition());
+        telemetry.addData( "xslideisrunning", "value: %b", xsliderunning);
 
         //Normal Mode: Fast
         if (gamepad2.y) {
@@ -305,9 +330,28 @@ public class TankDrive extends OpMode
         left_tread.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
+    public void XSlideStart(float degrees, float power) {
+        xslide.setTargetPosition( Math.round(degrees * encoder_count_per_degree));
+        xslide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        xslide.setPower(power);
+    }
+    public void XSlideFinish() {
+        xslide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        xslide.setPower(0);
+    }
+
     public void XSlideRotate(float degrees, float power) {
-        int newXSlideTarget = xslide.getCurrentPosition() + Math.round(degrees * encoder_count_per_degree);
-        xslide.setTargetPosition(newXSlideTarget);
+        int finalTarget = 0;
+        if (xSlideDown == true) {
+           finalTarget = upTarget;
+        }
+        else if (xSlideUp == true) {
+            finalTarget = downTarget;
+        }
+        else {
+            finalTarget =  xslide.getCurrentPosition() + Math.round(degrees * encoder_count_per_degree);
+        }
+        xslide.setTargetPosition(finalTarget);
         xslide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         xslide.setPower(power);
         while (xslide.isBusy()) {
@@ -316,8 +360,15 @@ public class TankDrive extends OpMode
             telemetry.update();
         }
         // Stop all motion;
+        xslide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         xslide.setPower(0);
         // Turn off RUN_TO_POSITION
         xslide.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        if (degrees > 0) {
+            boolean xSlideDown = true;
+        }
+        else if (degrees < 0) {
+            boolean xSlideUp = true;
+        }
     }
 }

@@ -77,6 +77,7 @@ public class TankDrive extends OpMode
     private DcMotor hook;
     private DcMotor xslide;
     private DcMotor gobbler;
+    private DcMotor extender;
     private ColorSensor color_sensor;
     private double gear = 0.4;
     private double turnmod = 1.75;
@@ -96,6 +97,8 @@ public class TankDrive extends OpMode
 
     boolean xsliderunning = false;
 
+    boolean extenderrunning = false;
+
     int keyCountdown;
 
     @Override
@@ -111,14 +114,18 @@ public class TankDrive extends OpMode
         hook = hardwareMap.get(DcMotor.class, "hook");
         xslide = hardwareMap.get(DcMotor.class, "xslide");
         gobbler = hardwareMap.get(DcMotor.class, "gobbler");
+        extender = hardwareMap.get(DcMotor.class, "extender");
         hook_stop = hardwareMap.get(DigitalChannel.class, "hook_stop");
         hook_stop.setMode(DigitalChannel.Mode.INPUT);
         color_sensor = hardwareMap.get(ColorSensor.class, "color_sensor");
         park_servo = hardwareMap.get(Servo.class, "park_servo");
 
-        // Set xslide motor position to zero
+        // Set xslide/extender motor position to zero
         xslide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         xslide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        extender.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        extender.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         //test_motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // Most robots need the motor on one side to be reversed to drive forward
@@ -160,6 +167,7 @@ public class TankDrive extends OpMode
         double leftPower;
         double rightPower;
         double xSlidePower;
+        double ExtenderPower;
         boolean hookstop_state = hook_stop.getState();
         telemetry.addData("hook_stop", Boolean.toString(hookstop_state));
 
@@ -202,10 +210,13 @@ public class TankDrive extends OpMode
 
         //Manual Mode for X-Slide Mechanism:
 
-        double xSlideDrive =  gamepad2.left_stick_y * 0.75;
+        double xSlideDrive =  gamepad1.left_stick_y * 0.45;
         xSlidePower = Range.clip(xSlideDrive, -1.0, 1.0);
 
         xslide.setPower(xSlidePower);
+
+        double ExtenderDrive = gamepad1.right_stick_x;
+        ExtenderPower = Range.clip(ExtenderDrive, -1.0, 1.0);
 
         if (gamepad1.y){
             hook.setPower(1.0);
@@ -238,24 +249,39 @@ public class TankDrive extends OpMode
             keyCountdown--;
         }
 
-        // make elevator chain go up and down
+        // make x-slide mechanism go up and down
         if (gamepad1.dpad_down){
-            XSlideStart(95.0f, 0.5f);
+            XSlideStart(115f, 0.6f);
             xsliderunning = true;
         }
         if (gamepad1.dpad_up) {
-            XSlideStart(0.0f, 0.5f);
+            XSlideStart(0.0f, 0.6f);
             xsliderunning = true;
         }
+
         if(xsliderunning) {
-            if(!xslide.isBusy()) {
-                xsliderunning = false;
-                XSlideFinish();
-            }
+           xslide.setPower(0.6f);
         }
+
         telemetry.addData("XSlideEncoder", "Current: %d",
                 xslide.getCurrentPosition());
         telemetry.addData( "xslideisrunning", "value: %b", xsliderunning);
+
+        if (gamepad1.dpad_left){
+           ExtenderStart(-26f, 0.5f);
+           extenderrunning = true;
+        }
+        if (gamepad1.dpad_right) {
+            ExtenderStart(0.0f, 0.5f);
+            extenderrunning = true;
+        }
+        if(extenderrunning) {
+            extender.setPower(0.5f);
+        }
+
+        telemetry.addData("ExtenderEncoder", "Current: %d",
+                xslide.getCurrentPosition());
+        telemetry.addData( "Extender is Running", "value: %b", extenderrunning);
 
         //Normal Mode: Fast
         if (gamepad2.y) {
@@ -336,9 +362,18 @@ public class TankDrive extends OpMode
         xslide.setPower(power);
     }
     public void XSlideFinish() {
-        xslide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        xslide.setPower(0);
+        //xslide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
+
+    public void ExtenderStart(float inches, float power) {
+        extender.setTargetPosition( Math.round(inches * encoder_count_per_inch * 2.5f));
+        extender.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        extender.setPower(power);
+    }
+    public void ExtenderFinish() {
+        //extender.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+    }
+
 
     public void XSlideRotate(float degrees, float power) {
         int finalTarget = 0;

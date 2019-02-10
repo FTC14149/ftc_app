@@ -11,9 +11,12 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 //@Disabled
 public class LeftSideLinear extends EncoderCameraLinearOpMode {
 
+    //Runs our superclass which initalizes all of our motors/servos and sets modes for them.
     @Override
     public void runOpMode() {
         super.runOpMode();
+
+        //Very complex code behind the scenes here, but it takes 10 images and then decides which mineral is the gold one, via drawing boxes on them and counting the yellow pixels in each box.
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -42,7 +45,7 @@ public class LeftSideLinear extends EncoderCameraLinearOpMode {
         }
         hook.setPower(0.0);
 
-        //Left Path
+        //Left Path - if the gold is on the left side.
         if (originalReading == 1) {
             DriveStraight(6f, 0.6f);
             EncoderTurn(36.5f, 0.6f);
@@ -63,7 +66,7 @@ public class LeftSideLinear extends EncoderCameraLinearOpMode {
             park_servo.setPosition(-1.0);
             while ((runtime.time() < 12) && opModeIsActive());
         }
-        //Right Path
+        //Right Path - if the gold is on the right side.
         else if (originalReading == 2) {
             DriveStraight(6f, 0.6f);
             EncoderTurn(-36f, 0.6f);
@@ -85,7 +88,7 @@ public class LeftSideLinear extends EncoderCameraLinearOpMode {
             park_servo.setPosition(-1.0);
             while ((runtime.time() < 12) && opModeIsActive()) ;
         }
-        //Middle Path
+        //Middle Path - if the gold is in the middle.
         else if (originalReading == 3 || originalReading == 0) {
             DriveStraight(24f, 1.0f);
             DriveStraight(-13f, 0.8f);

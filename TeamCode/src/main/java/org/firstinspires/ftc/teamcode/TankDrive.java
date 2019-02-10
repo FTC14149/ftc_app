@@ -84,6 +84,7 @@ public class TankDrive extends OpMode
     private DigitalChannel hook_stop;
     private Servo park_servo;
 
+
     float hsvValues[] = {0F, 0F, 0F};
     float values[] = hsvValues;
     final double ScaleFactor = 255;
@@ -96,13 +97,16 @@ public class TankDrive extends OpMode
     static final float encoder_count_per_degree = 17.74f;
 
     boolean xsliderunning = false;
+    float xSlidePositionToHold = 0.0f;
 
     boolean extenderrunning = false;
+    float extenderPositionToHold = 0.0f;
 
     int keyCountdown;
 
     @Override
     public void init() {
+        //Initialization. Some legacy color sensor code is left over.
         telemetry.addData("Status", "Initialized");
 
         // Initialize the hardware variables. Note that the strings used here as parameters
@@ -185,11 +189,7 @@ public class TankDrive extends OpMode
 
 
 
-        // change the background color to match the color detected by the RGB sensor.
-        // pass a reference to the hue, saturation, and value array as an argument
-        // to the HSVToColor method.
-        // Choose to drive using either Tank Mode, or POV Mode
-        // Comment out the method that's not used.  The default below is POV.
+        //Power calculation:
 
         // POV Mode uses left stick to go forward, and right stick to turn.
         // - This uses basic math to combine motions and is easier to drive straight.
@@ -208,7 +208,7 @@ public class TankDrive extends OpMode
         left_tread.setPower(leftPower);
         right_tread.setPower(rightPower);
 
-        //Manual Mode for X-Slide Mechanism:
+        //Manual Mode for X-Slide Mechanism (Legacy):
 
         if(gamepad1.left_stick_y < -0.1 || gamepad1.left_stick_y > 0.1) {
             xslide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -231,6 +231,8 @@ public class TankDrive extends OpMode
         }
 
 
+        //Hook code:
+
         if (gamepad1.y){
             hook.setPower(1.0);
         }
@@ -241,6 +243,8 @@ public class TankDrive extends OpMode
                 hook.setPower(0);
             }
         }
+
+        //Gobbler code:
 
         if (gamepad1.a) {
             gobbler.setPower(1.0);
@@ -259,41 +263,45 @@ public class TankDrive extends OpMode
             park_servo.setPosition(0.0);
         }
 
+        //X-slide code:
+
         // make x-slide mechanism go up and down
         if (gamepad1.dpad_down){
-            XSlideStart(115f, 0.6f);
+            xSlidePositionToHold += 10;
             xsliderunning = true;
-            ExtenderStart(-30f, 0.7f);
-            extenderrunning = true;
         }
         if (gamepad1.dpad_up) {
-            XSlideStart(0.0f, 0.6f);
+            xSlidePositionToHold -= 10;
             xsliderunning = true;
         }
 
         if(xsliderunning) {
-           xslide.setPower(0.6f);
+            XSlideStart(xSlidePositionToHold, 0.6f);
         }
 
         telemetry.addData("XSlideEncoder", "Current: %d",
                 xslide.getCurrentPosition());
         telemetry.addData( "xslideisrunning", "value: %b", xsliderunning);
 
+        //Extender code:
+
         if (gamepad1.dpad_left){
-           ExtenderStart(-36f, 0.7f);
-           extenderrunning = true;
+            extenderPositionToHold -= 10;
+            extenderrunning = true;
         }
         if (gamepad1.dpad_right) {
-            ExtenderStart(0.0f, 0.5f);
+            extenderPositionToHold += 10;
             extenderrunning = true;
         }
         if(extenderrunning) {
-            extender.setPower(0.7f);
+            ExtenderStart(extenderPositionToHold, 0.7f);
         }
 
         telemetry.addData("ExtenderEncoder", "Current: %d",
                 xslide.getCurrentPosition());
         telemetry.addData( "Extender is Running", "value: %b", extenderrunning);
+
+        //Gear system...can set different powers for the motor. Slow for precise movements, medium for normal movement, fast for obstacles/blitzing past people (and stealing their minerals).
 
         //Normal Mode: Fast
         if (gamepad2.y) {
@@ -302,8 +310,8 @@ public class TankDrive extends OpMode
         }
         //Precise Mode: Slow
         if (gamepad2.x) {
-            gear = 0.16;
-            turnmod = 2.2;
+            gear = 0.2;
+            turnmod = 2.5;
         }
         //TURBO Mode: Faster
         if (gamepad2.b) {
@@ -324,6 +332,8 @@ public class TankDrive extends OpMode
     @Override
     public void stop() {
     }
+
+    //Complex here...but, sets a target (which is created by multiplying degrees/inches by a constant which turns them into the encoder pulses needed to go that far), sets mode, and runs to it, then turns off.
 
     public void DriveStraight(float inches, float power) {
         int newLeftTarget = left_tread.getCurrentPosition() + Math.round(inches * encoder_count_per_inch);
@@ -385,7 +395,6 @@ public class TankDrive extends OpMode
     public void ExtenderFinish() {
         //extender.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
-
 
     public void XSlideRotate(float degrees, float power) {
         int finalTarget = 0;

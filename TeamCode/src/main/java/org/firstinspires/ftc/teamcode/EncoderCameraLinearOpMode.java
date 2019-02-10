@@ -18,6 +18,9 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 public class EncoderCameraLinearOpMode extends LinearOpModeCamera {
     private DcMotor left_tread;
     private DcMotor right_tread;
+    private DcMotor xslide;
+    private DcMotor extender;
+    public DcMotor gobbler;
     public DcMotor hook;
     public CRServo elevator;
     public ElapsedTime runtime = new ElapsedTime();
@@ -39,6 +42,9 @@ public class EncoderCameraLinearOpMode extends LinearOpModeCamera {
         left_tread = hardwareMap.get(DcMotor.class, "left_tread");
         right_tread = hardwareMap.get(DcMotor.class, "right_tread");
         hook = hardwareMap.get(DcMotor.class, "hook");
+        xslide = hardwareMap.get(DcMotor.class, "xslide");
+        extender = hardwareMap.get(DcMotor.class, "extender");
+        gobbler = hardwareMap.get(DcMotor.class, "gobbler");
         elevator = hardwareMap.get(CRServo.class, "elevator");
         park_servo = hardwareMap.get(Servo.class, "park_servo");
         left_tread.setDirection(DcMotor.Direction.REVERSE);
@@ -48,7 +54,13 @@ public class EncoderCameraLinearOpMode extends LinearOpModeCamera {
         right_tread.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         right_tread.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         hook.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        gobbler.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
+        xslide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        xslide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        extender.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        extender.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         if (isCameraAvailable()) {
 
@@ -110,6 +122,25 @@ public class EncoderCameraLinearOpMode extends LinearOpModeCamera {
         // Turn off RUN_TO_POSITION
         left_tread.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
+
+    public void XSlideStart(float degrees, float power) {
+        xslide.setTargetPosition( Math.round(degrees * encoder_count_per_degree));
+        xslide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        xslide.setPower(power);
+    }
+    public void XSlideFinish() {
+        //xslide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+    }
+
+    public void ExtenderStart(float inches, float power) {
+        extender.setTargetPosition( Math.round(inches * encoder_count_per_inch * 2.5f));
+        extender.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        extender.setPower(power);
+    }
+    public void ExtenderFinish() {
+        //extender.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+    }
+
 
 }
 

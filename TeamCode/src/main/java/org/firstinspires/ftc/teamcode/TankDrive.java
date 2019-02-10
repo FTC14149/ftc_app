@@ -210,13 +210,26 @@ public class TankDrive extends OpMode
 
         //Manual Mode for X-Slide Mechanism:
 
-        double xSlideDrive =  gamepad1.left_stick_y * 0.45;
-        xSlidePower = Range.clip(xSlideDrive, -1.0, 1.0);
+        if(gamepad1.left_stick_y < -0.1 || gamepad1.left_stick_y > 0.1) {
+            xslide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            double xSlideDrive =  gamepad1.left_stick_y * 0.45;
+            xSlidePower = Range.clip(xSlideDrive, -1.0, 1.0);
+            xslide.setPower(xSlidePower);
+        }
+        else {
+            xslide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        }
 
-        xslide.setPower(xSlidePower);
+        if(gamepad1.right_stick_x < -0.1 || gamepad1.right_stick_x > 0.1) {
+            extender.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            double ExtenderDrive = gamepad1.right_stick_x;
+            ExtenderPower = Range.clip(ExtenderDrive, -1.0, 1.0);
+            extender.setPower(ExtenderPower);
+        }
+        else {
+            extender.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        }
 
-        double ExtenderDrive = gamepad1.right_stick_x;
-        ExtenderPower = Range.clip(ExtenderDrive, -1.0, 1.0);
 
         if (gamepad1.y){
             hook.setPower(1.0);
@@ -239,20 +252,19 @@ public class TankDrive extends OpMode
             gobbler.setPower(0.0);
         }
 
-        if (gamepad1.dpad_right) {
-         park_servo.setPosition(1.0);
+        if(gamepad2.dpad_up) {
+            park_servo.setPosition(1.0);
         }
-        if (gamepad1.dpad_left) {
-            park_servo.setPosition(-0.5);
-        }
-        if(keyCountdown > 0) {
-            keyCountdown--;
+        if (gamepad2.dpad_down) {
+            park_servo.setPosition(0.0);
         }
 
         // make x-slide mechanism go up and down
         if (gamepad1.dpad_down){
             XSlideStart(115f, 0.6f);
             xsliderunning = true;
+            ExtenderStart(-30f, 0.7f);
+            extenderrunning = true;
         }
         if (gamepad1.dpad_up) {
             XSlideStart(0.0f, 0.6f);
@@ -268,7 +280,7 @@ public class TankDrive extends OpMode
         telemetry.addData( "xslideisrunning", "value: %b", xsliderunning);
 
         if (gamepad1.dpad_left){
-           ExtenderStart(-26f, 0.5f);
+           ExtenderStart(-36f, 0.7f);
            extenderrunning = true;
         }
         if (gamepad1.dpad_right) {
@@ -276,7 +288,7 @@ public class TankDrive extends OpMode
             extenderrunning = true;
         }
         if(extenderrunning) {
-            extender.setPower(0.5f);
+            extender.setPower(0.7f);
         }
 
         telemetry.addData("ExtenderEncoder", "Current: %d",
@@ -286,7 +298,7 @@ public class TankDrive extends OpMode
         //Normal Mode: Fast
         if (gamepad2.y) {
             gear = 0.4;
-            turnmod = 1.75;
+            turnmod = 1.45;
         }
         //Precise Mode: Slow
         if (gamepad2.x) {
